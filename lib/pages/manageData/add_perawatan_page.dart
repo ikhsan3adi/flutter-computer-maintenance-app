@@ -238,7 +238,7 @@ class _AddPerawatanResultState extends State<AddPerawatanResult> {
     final uri = Uri(
       scheme: 'http',
       host: iPAddress,
-      path: 'MxData_device/createNewPerawatan/',
+      path: '$apiPath/createNewPerawatan/',
       queryParameters: {
         'kode_unit': widget.newPerawatan.kodeUnit,
         'tanggal_pengecekan': widget.newPerawatan.tanggal,
@@ -302,10 +302,9 @@ class _AddPerawatanResultState extends State<AddPerawatanResult> {
                     textColor: Colors.blue,
                     snapshotErr: 'Insert data berhasil',
                     labelBtn: 'Lihat data',
-                    iconRefresh: Icons.home_outlined,
+                    iconRefresh: Icons.list,
                     onPress: () {
-                      int count = 0;
-                      Navigator.of(context).popUntil((_) => count++ >= 2);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                   );
                 } else if (snapshot.hasError) {

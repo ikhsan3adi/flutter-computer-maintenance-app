@@ -69,7 +69,7 @@ Future<List<Perawatan>> downloadPerawatanJSON(String kodeUnit) async {
     response = await get(Uri(
       scheme: 'http',
       host: iPAddress,
-      path: 'MxData_Device/getPerawatan/',
+      path: '$apiPath/getPerawatan/',
       queryParameters: {'kode_unit': kodeUnit},
     ));
   } catch (e) {

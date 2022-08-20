@@ -11,31 +11,39 @@ Widget mxListViewBuilder({required snapshot, required itemBuilder, VoidCallback?
   );
 }
 
-Widget mxCardListTile(
-    {required snapshot,
-    index,
-    required titleText,
-    String? subtitleText,
-    VoidCallback? onTap,
-    Widget? childLeading,
-    foregroundImage,
-    Color? leadingBackgroundColor = Colors.blue,
-    Color? leadingForegroundColor = Colors.blue,
-    Color? cardColor}) {
+Widget mxCardListTile({
+  required snapshot,
+  index,
+  required Text titleText,
+  String? subtitleText,
+  VoidCallback? onTap,
+  Widget? childLeading,
+  foregroundImage,
+  Color? leadingBackgroundColor = Colors.blue,
+  Color? leadingForegroundColor = Colors.blue,
+  Color? cardColor,
+  bool hasTrailing = false,
+  bool isThreeLines = false,
+  Widget? trailing = const Icon(Icons.more_vert_outlined),
+  EdgeInsetsGeometry? padding = const EdgeInsets.symmetric(horizontal: 16),
+}) {
   cardColor ??= index % 2 == 0 ? Colors.white : Colors.lightBlue[50];
 
   return Card(
     color: cardColor,
     child: ListTile(
+      contentPadding: padding,
       leading: CircleAvatar(
         foregroundColor: leadingForegroundColor,
         backgroundColor: leadingBackgroundColor,
         foregroundImage: foregroundImage,
         child: childLeading,
       ),
-      title: Text(titleText),
+      title: titleText,
       subtitle: Text(subtitleText!),
       onTap: onTap,
+      isThreeLine: isThreeLines,
+      trailing: hasTrailing ? trailing : null,
     ),
   );
 }

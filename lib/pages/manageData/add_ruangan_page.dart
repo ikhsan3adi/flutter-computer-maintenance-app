@@ -66,7 +66,7 @@ class _AddRuanganState extends State<AddRuangan> {
                         }
                       },
                       hintText: 'Ruangan',
-                      // autoFocus: true,
+                      autoFocus: true,
                       textCapitalization: TextCapitalization.sentences,
                     ),
                   ),
@@ -193,7 +193,7 @@ class _AddRuanganResultState extends State<AddRuanganResult> {
                     icon: Icons.do_not_disturb_alt_outlined,
                     snapshotErr: '${snapshot.error}',
                     labelBtn: 'Lihat data',
-                    iconRefresh: Icons.home_outlined,
+                    iconRefresh: Icons.list,
                     onPress: () {
                       setState(() {
                         // var route = MaterialPageRoute(
@@ -218,7 +218,7 @@ class _AddRuanganResultState extends State<AddRuanganResult> {
     final uri = Uri(
         scheme: 'http',
         host: iPAddress,
-        path: 'MxData_device/createNewRuangan/',
+        path: '$apiPath/createNewRuangan/',
         queryParameters: {'nama_ruangan': widget.newRuangan.namaRuangan, 'kode': widget.newRuangan.kode});
 
     final Response response;

@@ -124,3 +124,5 @@ bool connectToDatabase = true;
 // String errorConnection = 'Can\'t connect to the database or\nwrong IP Address';
 String errorConnection = 'Tidak bisa konek ke server atau\nIP Address salah';
 String errorDataEmpty = 'Tidak ada data';
+
+String apiPath = 'perawatan_device_dprd';

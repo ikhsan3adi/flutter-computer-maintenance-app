@@ -19,7 +19,7 @@ Future<Perangkat?> searchPerangkat(String kodeUnit) async {
   Uri jsonEndPoint = Uri(
     scheme: 'http',
     host: iPAddress,
-    path: 'MxData_device/getPerangkat/',
+    path: '$apiPath/getPerangkat/',
     queryParameters: {'kode_unit': kodeUnit},
   );
 

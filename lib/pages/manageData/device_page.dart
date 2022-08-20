@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
 import 'package:project_maintenance_app/customClasses/data.dart';
 import 'package:project_maintenance_app/customClasses/myScaffold.dart';
@@ -29,7 +30,7 @@ Future<List<Perangkat>> downloadDeviceJSON(String ruangan) async {
     response = await get(Uri(
       scheme: 'http',
       host: iPAddress,
-      path: 'MxData_Device/getPerangkat/',
+      path: '$apiPath/getPerangkat/',
       queryParameters: {'ruangan': ruangan},
     ));
   } catch (e) {
@@ -100,28 +101,7 @@ class _DataDeviceState extends State<DataDevice> {
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
-                return snapshot.hasData
-                    ? mxListViewBuilder(
-                        snapshot: snapshot,
-                        itemBuilder: (context, index) {
-                          return mxCardListTile(
-                            snapshot: snapshot,
-                            index: index,
-                            titleText: snapshot.data![index].namaUser,
-                            subtitleText:
-                                'Kode unit : ${snapshot.data![index].kodeUnit} | ${snapshot.data![index].namaUnit} ${snapshot.data![index].type}',
-                            onTap: () {
-                              var route = MaterialPageRoute(
-                                builder: (BuildContext context) => DataPerawatan(device: snapshot.data![index]),
-                              );
-                              Navigator.of(context).push(route);
-                            },
-                            leadingBackgroundColor: Colors.transparent,
-                            childLeading: const Icon(Icons.computer),
-                          );
-                        },
-                      )
-                    : mxDataLoading();
+                return mxDataLoading();
               case ConnectionState.done:
               default:
                 if (snapshot.hasData) {
@@ -130,11 +110,63 @@ class _DataDeviceState extends State<DataDevice> {
                     itemBuilder: (context, index) {
                       return snapshot.data![index].ruangan == widget.ruangan.namaRuangan
                           ? mxCardListTile(
+                              hasTrailing: true,
+                              trailing: PopupMenuButton(
+                                itemBuilder: ((context) => [
+                                      PopupMenuItem(
+                                        onTap: (() async {
+                                          String kodeUnit = snapshot.data![index].kodeUnit;
+
+                                          bool b = await openDeleteDialog(context: context, kodeUnit: kodeUnit);
+
+                                          if (!b) {
+                                            return;
+                                          } else {
+                                            final uri = Uri(
+                                              scheme: 'http',
+                                              host: iPAddress,
+                                              path: '$apiPath/deleteData/',
+                                              queryParameters: {
+                                                'tipe': 'Perangkat',
+                                                'kode_unit': kodeUnit,
+                                              },
+                                            );
+
+                                            var response = await post(uri);
+
+                                            if (response.statusCode == 200) {
+                                              if (int.parse(response.body.toString()) == 1) {
+                                                setState(() {
+                                                  myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+                                                  Fluttertoast.showToast(msg: 'Hapus data $kodeUnit berhasil');
+                                                  // print(response.body);
+                                                });
+                                              } else {
+                                                Fluttertoast.showToast(msg: 'Kesalahan script php');
+                                              }
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server');
+                                            }
+                                          }
+                                        }),
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.delete),
+                                            SizedBox(width: 5),
+                                            Text('Hapus perangkat'),
+                                          ],
+                                        ),
+                                      ),
+                                    ]),
+                              ),
                               snapshot: snapshot,
                               index: index,
-                              titleText: snapshot.data![index].namaUser,
+                              titleText: Text(
+                                snapshot.data![index].namaUser,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
                               subtitleText:
-                                  'Kode unit : ${snapshot.data![index].kodeUnit} | ${snapshot.data![index].namaUnit} ${snapshot.data![index].type}',
+                                  'Kode unit : ${snapshot.data![index].kodeUnit}\nMerk unit : ${snapshot.data![index].namaUnit} ${snapshot.data![index].type}',
                               onTap: () {
                                 var route = MaterialPageRoute(
                                   builder: (BuildContext context) => DataPerawatan(device: snapshot.data![index]),
@@ -143,6 +175,7 @@ class _DataDeviceState extends State<DataDevice> {
                               },
                               leadingBackgroundColor: Colors.transparent,
                               childLeading: const Icon(Icons.computer),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             )
                           : const SizedBox();
                     },
@@ -197,4 +230,30 @@ class _DataDeviceState extends State<DataDevice> {
       ),
     );
   }
+}
+
+Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String kodeUnit}) {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Konfirmasi'),
+        content: Text('Apakah yakin ingin menghapus $kodeUnit?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('Ya'),
+          )
+        ],
+      );
+    },
+  );
 }

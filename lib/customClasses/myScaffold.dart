@@ -40,7 +40,7 @@ class _MxDrawerState extends State<MxDrawer> {
             children: [
               mxBuildMenuItem(
                 icon: Icons.signal_wifi_4_bar_lock,
-                titleText: 'Ubah IP Address',
+                titleText: 'Server IP Address',
                 subtitle: iPAddress,
                 onClicked: () {
                   setState(() {

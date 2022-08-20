@@ -80,6 +80,9 @@ class _HomeState extends State<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Image.asset(
+                'assets/images/home.png',
+              ),
               mxTextButton(
                 buttonPadding: 15,
                 icon: Icons.add_link,

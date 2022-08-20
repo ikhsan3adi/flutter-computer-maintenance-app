@@ -5,14 +5,14 @@ import 'package:project_maintenance_app/customClasses/myTextButton.dart';
 import 'package:project_maintenance_app/main.dart';
 import 'package:project_maintenance_app/pages/loading_page.dart';
 
+String iPAddress = '192.168.221.221';
+
 class IPAddressPage extends StatefulWidget {
   const IPAddressPage({Key? key}) : super(key: key);
 
   @override
   State<IPAddressPage> createState() => _IPAddressPageState();
 }
-
-String iPAddress = '192.168.221.221';
 
 class _IPAddressPageState extends State<IPAddressPage> {
   final formKey = GlobalKey<FormState>();

@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
 import 'package:project_maintenance_app/customClasses/data.dart';
 import 'package:project_maintenance_app/customClasses/myScaffold.dart';
@@ -32,7 +33,7 @@ Future<List<Ruangan>> downloadJSON() async {
     final uri = Uri(
       scheme: 'http',
       host: iPAddress,
-      path: 'MxData_device/getRuangan/',
+      path: '$apiPath/getRuangan/',
     );
     response = await get(uri);
   } catch (e) {
@@ -174,29 +175,7 @@ class _DataRuanganState extends State<DataRuangan> {
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
-                return snapshot.hasData
-                    ? mxListViewBuilder(
-                        snapshot: snapshot,
-                        itemBuilder: (context, index) {
-                          return mxCardListTile(
-                            childLeading: const Icon(
-                              Icons.home_outlined,
-                              color: Colors.white,
-                            ),
-                            snapshot: snapshot,
-                            index: index,
-                            titleText: snapshot.data![index].namaRuangan,
-                            subtitleText: 'Kode ruangan : ${snapshot.data![index].kode}',
-                            onTap: () {
-                              var route = MaterialPageRoute(
-                                builder: (BuildContext context) => DataDevice(ruangan: snapshot.data![index]),
-                              );
-                              Navigator.of(context).push(route);
-                            },
-                          );
-                        },
-                      )
-                    : mxDataLoading();
+                return mxDataLoading();
               case ConnectionState.done:
               default:
                 if (snapshot.hasData) {
@@ -204,13 +183,57 @@ class _DataRuanganState extends State<DataRuangan> {
                     snapshot: snapshot,
                     itemBuilder: (context, index) {
                       return mxCardListTile(
+                        hasTrailing: true,
+                        trailing: Builder(
+                          builder: ((context) {
+                            return IconButton(
+                              onPressed: () async {
+                                String ruangan = snapshot.data![index].namaRuangan;
+                                String kodeRuangan = snapshot.data![index].kode;
+
+                                bool b = await openDeleteDialog(context: context, ruangan: ruangan);
+
+                                if (!b) {
+                                  return;
+                                } else {
+                                  final uri = Uri(
+                                    scheme: 'http',
+                                    host: iPAddress,
+                                    path: '$apiPath/deleteData/',
+                                    queryParameters: {
+                                      'tipe': "Ruangan",
+                                      'kode_ruangan': kodeRuangan,
+                                    },
+                                  );
+
+                                  var response = await post(uri);
+
+                                  if (response.statusCode == 200) {
+                                    if (int.parse(response.body.toString()) == 1) {
+                                      setState(() {
+                                        myFuture = downloadJSON();
+                                        Fluttertoast.showToast(msg: 'Hapus ruangan "$ruangan" berhasil');
+                                      });
+                                    } else {
+                                      Fluttertoast.showToast(msg: 'Kesalahan script php');
+                                    }
+                                    // print(response.body);
+                                  } else {
+                                    Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server, hapus ruangan "$ruangan" gagal');
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.delete_forever),
+                            );
+                          }),
+                        ),
                         childLeading: const Icon(
                           Icons.home_outlined,
                           color: Colors.white,
                         ),
                         snapshot: snapshot,
                         index: index,
-                        titleText: snapshot.data![index].namaRuangan,
+                        titleText: Text(snapshot.data![index].namaRuangan),
                         subtitleText: 'Kode ruangan : ${snapshot.data![index].kode}',
                         onTap: () {
                           var route = MaterialPageRoute(
@@ -275,4 +298,30 @@ class _DataRuanganState extends State<DataRuangan> {
 
 void pushSecondHome({required MaterialPageRoute route}) {
   Navigator.of(_scaffoldKey.currentContext!).push(route);
+}
+
+Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String ruangan}) {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Konfirmasi'),
+        content: Text('Apakah yakin ingin menghapus ruangan $ruangan?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('Ya'),
+          )
+        ],
+      );
+    },
+  );
 }
