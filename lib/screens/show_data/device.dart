@@ -4,34 +4,75 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
-import 'package:project_maintenance_app/customClasses/data.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
-import 'package:project_maintenance_app/customClasses/myBuilder.dart';
-import 'package:project_maintenance_app/pages/appsettings/ipaddress.dart';
-import 'package:project_maintenance_app/pages/manageData/add_device_page.dart';
-import 'package:project_maintenance_app/pages/manageData/dataPerawatan_page.dart';
-import 'package:project_maintenance_app/pages/manageData/ruangan_page.dart';
+import 'package:project_maintenance_app/custom_widget/myFloatingActionButton.dart';
+import 'package:project_maintenance_app/custom_widget/mycolor.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
+import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/main.dart';
+import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan.dart';
+import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/screens/add_data/add_perangkat/add_device.dart';
+import 'package:project_maintenance_app/pages/core_page.dart';
+import 'package:project_maintenance_app/screens/show_data/dataPerawatan.dart';
+import 'package:project_maintenance_app/screens/show_data/ruangan.dart';
 
 // fake data
 List<Perangkat> dummyPerangkat = [
-  Perangkat(kodeUnit: 'FS-01', namaUser: 'Jaki', namaUnit: 'Lenovo', type: '0123', ruangan: 'Fasilitasi', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'FS-02', namaUser: 'Harlan', namaUnit: 'Lenovo', type: '0123', ruangan: 'Fasilitasi', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'TU-01', namaUser: 'Terkadang', namaUnit: 'Lenovo', type: '0123', ruangan: 'Tata Usaha', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'PS-01', namaUser: 'Gweh', namaUnit: 'Lenovo', type: '0123', ruangan: 'Persidangan', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'UM-01', namaUser: 'Asep', namaUnit: 'Lenovo', type: '0123', ruangan: 'Umum', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'HM-01', namaUser: 'Apabila', namaUnit: 'Lenovo', type: '0123', ruangan: 'Humas', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'KU-01', namaUser: 'Turi ip ip ip', namaUnit: 'Lenovo', type: '0123', ruangan: 'Keuangan', keterangan: 'keterangan'),
-  Perangkat(kodeUnit: 'KU-01', namaUser: 'Zhong Xina', namaUnit: 'Asus', type: '0123', ruangan: 'Keuangan', keterangan: 'OOOOOMAAAGAAAA'),
+  Perangkat(
+      kodeUnit: 'FS-01', perangkat: 'komputer', namaUser: 'Jaki', namaUnit: 'Lenovo', type: '0123', ruangan: 'Fasilitasi', keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'FS-02',
+      perangkat: 'komputer',
+      namaUser: 'Harlan',
+      namaUnit: 'Lenovo',
+      type: '0123',
+      ruangan: 'Fasilitasi',
+      keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'TU-01',
+      perangkat: 'komputer',
+      namaUser: 'Terkadang',
+      namaUnit: 'Lenovo',
+      type: '0123',
+      ruangan: 'Tata Usaha',
+      keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'PS-01', perangkat: 'komputer', namaUser: 'Gweh', namaUnit: 'Lenovo', type: '0123', ruangan: 'Persidangan', keterangan: 'keterangan'),
+  Perangkat(kodeUnit: 'UM-01', perangkat: 'komputer', namaUser: 'Asep', namaUnit: 'Lenovo', type: '0123', ruangan: 'Umum', keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'HM-01', perangkat: 'komputer', namaUser: 'Apabila', namaUnit: 'Lenovo', type: '0123', ruangan: 'Humas', keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'KU-01',
+      perangkat: 'komputer',
+      namaUser: 'Turi ip ip ip',
+      namaUnit: 'Lenovo',
+      type: '0123',
+      ruangan: 'Keuangan',
+      keterangan: 'keterangan'),
+  Perangkat(
+      kodeUnit: 'KU-01',
+      perangkat: 'komputer',
+      namaUser: 'Zhong Xina',
+      namaUnit: 'Asus',
+      type: '0123',
+      ruangan: 'Keuangan',
+      keterangan: 'OOOOOMAAAGAAAA'),
 ];
 
-Future<List<Perangkat>> downloadDeviceJSON(String ruangan) async {
+Future<List<Perangkat>> downloadDeviceJSON(String ruangan, String jenis) async {
   Response? response;
   try {
     response = await get(Uri(
       scheme: 'http',
-      host: iPAddress,
-      path: '$apiPath/getPerangkat/',
-      queryParameters: {'ruangan': ruangan},
+      host: url,
+      path: '$addressPath/getPerangkat/',
+      queryParameters: {
+        'ruangan': ruangan,
+        'perangkat': jenis,
+        'mode': 'select',
+      },
     ));
   } catch (e) {
     throw Exception(errorConnection);
@@ -46,9 +87,10 @@ Future<List<Perangkat>> downloadDeviceJSON(String ruangan) async {
 }
 
 class DataDevice extends StatefulWidget {
-  const DataDevice({Key? key, required this.ruangan}) : super(key: key);
+  const DataDevice({Key? key, required this.ruangan, required this.jenis}) : super(key: key);
 
   final Ruangan ruangan;
+  final String jenis;
 
   @override
   State<DataDevice> createState() => _DataDeviceState();
@@ -61,43 +103,42 @@ class _DataDeviceState extends State<DataDevice> {
   void initState() {
     super.initState();
 
-    myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+    myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
   }
 
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print("[Data_device] Current IP Address is : $iPAddress");
+      print("[Data_device] Current URL Address is : $url");
     }
     return Scaffold(
       appBar: mxAppBar(
-        title: 'Daftar perangkat ruangan ${widget.ruangan.namaRuangan}',
+        foregroundColor: colorSecondary,
+        title: 'Daftar ${widget.jenis} ruangan ${widget.ruangan.namaRuangan}',
         centerTitle: false,
-        style: const TextStyle(color: Colors.blueAccent, fontSize: 16),
+        style: TextStyle(fontSize: 16, color: colorSecondary),
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
               icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () {
-                Navigator.maybePop(context);
-              },
+              onPressed: () => Navigator.maybePop(context),
               tooltip: 'Kembali',
             );
           },
         ),
+        backgroundColor: Colors.transparent,
       ),
       body: RefreshIndicator(
         onRefresh: () {
           return Future(() async {
-            await Future.delayed(const Duration(milliseconds: 1000));
             setState(() {
-              myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+              myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
             });
           });
         },
         child: FutureBuilder<List<Perangkat>>(
-          future: connectToDatabase ? myFuture : null,
-          initialData: connectToDatabase ? null : dummyPerangkat,
+          future: myFuture,
+          // initialData: connectToDatabase ? null : dummyPerangkat,
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
@@ -105,14 +146,36 @@ class _DataDeviceState extends State<DataDevice> {
               case ConnectionState.done:
               default:
                 if (snapshot.hasData) {
-                  return mxListViewBuilder(
-                    snapshot: snapshot,
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length + 1,
                     itemBuilder: (context, index) {
-                      return snapshot.data![index].ruangan == widget.ruangan.namaRuangan
-                          ? mxCardListTile(
+                      if (index >= snapshot.data!.length) {
+                        return const SizedBox(height: 75);
+                      } else if (snapshot.data![index].ruangan != widget.ruangan.namaRuangan) {
+                        return const SizedBox();
+                      } else {
+                        return ValueListenableBuilder(
+                          valueListenable: currentTheme,
+                          builder: (context, value, _) {
+                            return mxCardListTile(
                               hasTrailing: true,
                               trailing: PopupMenuButton(
                                 itemBuilder: ((context) => [
+                                      PopupMenuItem(
+                                        onTap: (() {
+                                          var route = MaterialPageRoute(builder: (context) {
+                                            return AddPerawatan(perangkat: snapshot.data![index]);
+                                          });
+                                          Navigator.of(coreScaffoldKey.currentContext!).push(route);
+                                        }),
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.add_link),
+                                            SizedBox(width: 10),
+                                            Text('Tambah data perawatan'),
+                                          ],
+                                        ),
+                                      ),
                                       PopupMenuItem(
                                         onTap: (() async {
                                           String kodeUnit = snapshot.data![index].kodeUnit;
@@ -124,8 +187,8 @@ class _DataDeviceState extends State<DataDevice> {
                                           } else {
                                             final uri = Uri(
                                               scheme: 'http',
-                                              host: iPAddress,
-                                              path: '$apiPath/deleteData/',
+                                              host: url,
+                                              path: '$addressPath/deleteData/',
                                               queryParameters: {
                                                 'tipe': 'Perangkat',
                                                 'kode_unit': kodeUnit,
@@ -137,7 +200,7 @@ class _DataDeviceState extends State<DataDevice> {
                                             if (response.statusCode == 200) {
                                               if (int.parse(response.body.toString()) == 1) {
                                                 setState(() {
-                                                  myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+                                                  myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
                                                   Fluttertoast.showToast(msg: 'Hapus data $kodeUnit berhasil');
                                                   // print(response.body);
                                                 });
@@ -152,14 +215,13 @@ class _DataDeviceState extends State<DataDevice> {
                                         child: Row(
                                           children: const [
                                             Icon(Icons.delete),
-                                            SizedBox(width: 5),
+                                            SizedBox(width: 10),
                                             Text('Hapus perangkat'),
                                           ],
                                         ),
                                       ),
                                     ]),
                               ),
-                              snapshot: snapshot,
                               index: index,
                               titleText: Text(
                                 snapshot.data![index].namaUser,
@@ -176,8 +238,10 @@ class _DataDeviceState extends State<DataDevice> {
                               leadingBackgroundColor: Colors.transparent,
                               childLeading: const Icon(Icons.computer),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            )
-                          : const SizedBox();
+                            );
+                          },
+                        );
+                      }
                     },
                   );
                 } else if (snapshot.hasError) {
@@ -187,7 +251,7 @@ class _DataDeviceState extends State<DataDevice> {
                       snapshotErr: errMsg,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
                         });
                       },
                     );
@@ -198,7 +262,7 @@ class _DataDeviceState extends State<DataDevice> {
                       textColor: Colors.grey,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan);
+                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
                         });
                       },
                     );
@@ -211,22 +275,13 @@ class _DataDeviceState extends State<DataDevice> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          var route = MaterialPageRoute(
-            builder: ((context) {
-              return AddDevice(ruangan: widget.ruangan.namaRuangan);
-            }),
-          );
+      floatingActionButton: mxFloatingActionButton(
+        label: 'Tambah perangkat',
+        tooltip: 'Tambah data perangkat',
+        onPressed: () {
+          var route = MaterialPageRoute(builder: ((context) => AddDevice(ruangan: widget.ruangan.namaRuangan)));
           pushSecondHome(route: route);
         },
-        tooltip: 'Tambah data perangkat',
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(25))),
-        label: const Text('Tambah perangkat'),
-        icon: const Icon(
-          Icons.add,
-          size: 30,
-        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:project_maintenance_app/custom_widget/mycolor.dart';
 
 Widget mxTextButton({
   double buttonPadding = 5,
@@ -10,7 +11,7 @@ Widget mxTextButton({
   double? iconSize,
   VoidCallback? onPress,
 }) {
-  return TextButton.icon(
+  return ElevatedButton.icon(
     onPressed: onPress,
     icon: Icon(
       icon,
@@ -18,14 +19,20 @@ Widget mxTextButton({
     ),
     label: Text(
       label,
-      style: TextStyle(fontSize: labelFontSize),
+      style: TextStyle(
+        fontSize: labelFontSize,
+        fontWeight: FontWeight.w700,
+      ),
     ),
     style: ElevatedButton.styleFrom(
+      foregroundColor: Colors.white,
       alignment: Alignment.center,
       padding: EdgeInsets.all(buttonPadding),
-      primary: Colors.white,
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: Colors.blueAccent, width: 3),
+        // side: BorderSide(
+        //   color: colorPrimary,
+        //   width: 3,
+        // ),
         borderRadius: BorderRadius.circular(20),
       ),
     ),
@@ -42,12 +49,12 @@ Widget mxTextButtonNoIcon({
   return TextButton(
     onPressed: onPress,
     style: ElevatedButton.styleFrom(
+      // foregroundColor: hasOutline ? colorSecondary : Colors.white,
+      // backgroundColor: hasOutline ? Colors.white : colorPrimary,
       alignment: Alignment.center,
       padding: EdgeInsets.all(buttonPadding),
-      primary: hasOutline ? Colors.white : Colors.blueAccent,
-      onPrimary: hasOutline ? Colors.blue : Colors.white,
       shape: RoundedRectangleBorder(
-        side: hasOutline ? const BorderSide(color: Colors.blueAccent, width: 3) : BorderSide.none,
+        side: hasOutline ? BorderSide(color: colorSecondary, width: 3) : BorderSide.none,
         borderRadius: BorderRadius.circular(20),
       ),
     ),
@@ -58,7 +65,7 @@ Widget mxTextButtonNoIcon({
   );
 }
 
-Widget blueBigText({required String text, double? size = 20, Color? color = Colors.blueAccent, TextAlign? align}) {
+Widget blueBigText({required String text, double? size = 20, Color? color = Colors.teal, TextAlign? align}) {
   return Text(
     text,
     style: TextStyle(

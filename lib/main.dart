@@ -1,71 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
+import 'package:project_maintenance_app/pages/core_page.dart';
 import 'package:project_maintenance_app/pages/loading_page.dart';
-import 'package:project_maintenance_app/pages/scan/home.dart';
-import 'package:project_maintenance_app/pages/manageData/ruangan_page.dart';
-
-final screen = [
-  const MainHome(),
-  const SecondHome(),
-];
-
-int currentPageIndex = 0;
-GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-
-void openDrawer() {
-  _scaffoldKey.currentState!.openDrawer();
-}
-
-void closeDrawer() {
-  _scaffoldKey.currentState!.closeDrawer();
-}
+import 'package:project_maintenance_app/screens/login/login.dart';
+import 'package:project_maintenance_app/screens/search_data/search_scan.dart';
 
 void main() {
   runApp(
-    MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const Loading(),
-        '/home': (context) => const Main(),
+    ValueListenableBuilder<ThemeMode>(
+      valueListenable: currentTheme,
+      builder: (ctx, value, _) {
+        heroImageNotifier.value = value == ThemeMode.light ? lightHero : darkHero;
+        return MaterialApp(
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const LoadingPage(),
+            '/login': (context) => const LoginPage(),
+            '/home': (context) => const Core(),
+          },
+          theme: ThemeData(
+            brightness: Brightness.light,
+            primarySwatch: Colors.teal,
+            fontFamily: "San Francisco",
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.teal,
+            fontFamily: "San Francisco",
+          ),
+          themeMode: value,
+        );
       },
     ),
   );
 }
 
-class Main extends StatefulWidget {
-  const Main({Key? key}) : super(key: key);
+ValueNotifier<ThemeMode> currentTheme = ValueNotifier(ThemeMode.light);
 
-  @override
-  State<Main> createState() => _MainState();
-}
-
-class _MainState extends State<Main> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      body: screen[currentPageIndex],
-      drawer: const MxDrawer(),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: (value) {
-          setState(() {
-            currentPageIndex = value;
-          });
-        },
-        currentIndex: currentPageIndex,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Data Perangkat',
-          ),
-        ],
-      ),
-    );
-  }
-}
+void changeToDarkTheme({bool dark = false}) => dark ? currentTheme.value = ThemeMode.dark : currentTheme.value = ThemeMode.light;

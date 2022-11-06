@@ -1,11 +1,11 @@
 {
-    "name": "project_2",
-    "short_name": "project_2",
+    "name": "Perawatan komputer & printer",
+    "short_name": "Perawatan perangkat",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Flutter mobile application for digitalize the process of maintaining devices in the office",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

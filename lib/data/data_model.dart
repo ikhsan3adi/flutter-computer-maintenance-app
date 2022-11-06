@@ -1,3 +1,25 @@
+import 'package:project_maintenance_app/data/helper.dart';
+
+class Teknisi {
+  String id;
+  String username;
+  String nama;
+
+  Teknisi({
+    required this.id,
+    required this.username,
+    required this.nama,
+  });
+
+  factory Teknisi.fromJson(Map<String, dynamic> jsonData) {
+    return Teknisi(
+      id: jsonData['id'],
+      username: jsonData['username'],
+      nama: jsonData['nama'],
+    );
+  }
+}
+
 class Ruangan {
   String id;
   String namaRuangan;
@@ -16,6 +38,7 @@ class Ruangan {
 
 class Perangkat {
   String kodeUnit;
+  String perangkat;
   String namaUser;
   String namaUnit;
   String type;
@@ -24,6 +47,7 @@ class Perangkat {
 
   Perangkat({
     required this.kodeUnit,
+    required this.perangkat,
     required this.namaUser,
     required this.namaUnit,
     required this.type,
@@ -34,6 +58,7 @@ class Perangkat {
   factory Perangkat.fromJson(Map<String, dynamic> jsonData) {
     return Perangkat(
       kodeUnit: jsonData['kode_unit'],
+      perangkat: jsonData['perangkat'],
       namaUser: jsonData['nama_user'],
       namaUnit: jsonData['nama_unit'],
       type: jsonData['type'],
@@ -47,12 +72,6 @@ class Perawatan {
   int id;
   String kodeUnit;
   String tanggal;
-  bool pembersihan;
-  bool pengecekanChipset;
-  bool scanVirus;
-  bool pembersihanTemporary;
-  bool pengecekanSoftware;
-  bool installUpdateDriver;
   String keterangan;
   String teknisi;
 
@@ -60,18 +79,35 @@ class Perawatan {
     required this.id,
     required this.kodeUnit,
     required this.tanggal,
+    required this.keterangan,
+    required this.teknisi,
+  });
+}
+
+class PerawatanKomputer extends Perawatan {
+  bool pembersihan;
+  bool pengecekanChipset;
+  bool scanVirus;
+  bool pembersihanTemporary;
+  bool pengecekanSoftware;
+  bool installUpdateDriver;
+
+  PerawatanKomputer({
+    required super.id,
+    required super.kodeUnit,
+    required super.tanggal,
     required this.pembersihan,
     required this.pengecekanChipset,
     required this.scanVirus,
     required this.pembersihanTemporary,
     required this.pengecekanSoftware,
     required this.installUpdateDriver,
-    required this.keterangan,
-    required this.teknisi,
+    required super.keterangan,
+    required super.teknisi,
   });
 
-  factory Perawatan.fromJson(Map<String, dynamic> jsonData) {
-    return Perawatan(
+  factory PerawatanKomputer.fromJson(Map<String, dynamic> jsonData) {
+    return PerawatanKomputer(
       id: int.parse(jsonData['id']),
       kodeUnit: jsonData['kode_unit'],
       tanggal: jsonData['tanggal_pengecekan'],
@@ -87,42 +123,29 @@ class Perawatan {
   }
 }
 
-List<String> bulan = [
-  '',
-  'Januari',
-  'Febuari',
-  'Maret',
-  'April',
-  'Mei',
-  'Juni',
-  'Juli',
-  'Agustus',
-  'September',
-  'Oktober',
-  'November',
-  'Desember',
-];
+class PerawatanPrinter extends Perawatan {
+  bool pembersihan;
+  bool installUpdateDriver;
 
-bool strToBool(String s) {
-  if (s != '0') {
-    return true;
-  } else {
-    return false;
+  PerawatanPrinter({
+    required super.id,
+    required super.kodeUnit,
+    required super.tanggal,
+    required this.pembersihan,
+    required this.installUpdateDriver,
+    required super.keterangan,
+    required super.teknisi,
+  });
+
+  factory PerawatanPrinter.fromJson(Map<String, dynamic> jsonData) {
+    return PerawatanPrinter(
+      id: int.parse(jsonData['id']),
+      kodeUnit: jsonData['kode_unit'],
+      tanggal: jsonData['tanggal_pengecekan'],
+      pembersihan: strToBool(jsonData['pembersihan']),
+      installUpdateDriver: strToBool(jsonData['install_update_driver']),
+      keterangan: jsonData['keterangan'],
+      teknisi: jsonData['nama_teknisi'],
+    );
   }
 }
-
-String boolToStr(bool b) {
-  if (b) {
-    return '1';
-  } else {
-    return '0';
-  }
-}
-
-bool connectToDatabase = true;
-
-// String errorConnection = 'Can\'t connect to the database or\nwrong IP Address';
-String errorConnection = 'Tidak bisa konek ke server atau\nIP Address salah';
-String errorDataEmpty = 'Tidak ada data';
-
-String apiPath = 'perawatan_device_dprd';

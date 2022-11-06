@@ -2,4 +2,4 @@
 
 ## Purposes
 
-Flutter mobile application for digitalize the process of maintaining and recording devices in the office
+Flutter mobile application for digitalize the process of maintaining devices in the office

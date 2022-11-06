@@ -1,25 +1,26 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:project_maintenance_app/customClasses/data.dart';
-import 'package:project_maintenance_app/customClasses/myBuilder.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
-import 'package:project_maintenance_app/customClasses/myTextButton.dart';
-import 'package:project_maintenance_app/customClasses/myFormField.dart';
-import 'package:project_maintenance_app/pages/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
+import 'package:project_maintenance_app/custom_widget/myFormField.dart';
+import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan.dart';
 
-class AddPerawatan extends StatefulWidget {
-  const AddPerawatan({Key? key, required this.perangkat}) : super(key: key);
+class AddPerawatanKomputer extends StatefulWidget {
+  const AddPerawatanKomputer({Key? key, required this.perangkat}) : super(key: key);
 
   final Perangkat perangkat;
 
   @override
-  State<AddPerawatan> createState() => _AddPerawatanState();
+  State<AddPerawatanKomputer> createState() => _AddPerawatanKomputerState();
 }
 
-class _AddPerawatanState extends State<AddPerawatan> {
+class _AddPerawatanKomputerState extends State<AddPerawatanKomputer> {
   final formKey = GlobalKey<FormState>();
+  final focusNode = FocusNode();
 
-  late Perawatan newPerawatan = Perawatan(
+  late PerawatanKomputer newPerawatan = PerawatanKomputer(
     id: 0,
     kodeUnit: '',
     tanggal: '',
@@ -34,19 +35,13 @@ class _AddPerawatanState extends State<AddPerawatan> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    newPerawatan.teknisi = teknisi.nama;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var currentTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-
-    var y = currentTime.toString().substring(0, 4);
-    var m = currentTime.toString().substring(5, 7);
-    var d = currentTime.toString().substring(8, 10);
-
-    // ignore: avoid_print
-    print('$y-$d-$m');
-
-    newPerawatan.kodeUnit = widget.perangkat.kodeUnit;
-    newPerawatan.tanggal = '$y-$d-$m';
-
     return Scaffold(
       appBar: mxAppBar(
         title: 'Data perawatan baru',
@@ -63,7 +58,7 @@ class _AddPerawatanState extends State<AddPerawatan> {
         ),
       ),
       body: Container(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
         child: Form(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           key: formKey,
@@ -182,6 +177,7 @@ class _AddPerawatanState extends State<AddPerawatan> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextFormField(
+                      focusNode: focusNode,
                       textController: newPerawatan.keterangan,
                       labelText: 'Keterangan',
                       icon: Icons.more,
@@ -200,16 +196,27 @@ class _AddPerawatanState extends State<AddPerawatan> {
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
                         if (isValidForm) {
-                          setState(
-                            () {
-                              var route = MaterialPageRoute(
-                                builder: (BuildContext context) => AddPerawatanResult(
-                                  newPerawatan: newPerawatan,
-                                ),
-                              );
-                              Navigator.of(context).push(route);
-                            },
+                          focusNode.unfocus();
+                          var currentTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+                          var y = currentTime.toString().substring(0, 4);
+                          var m = currentTime.toString().substring(5, 7);
+                          var d = currentTime.toString().substring(8, 10);
+
+                          if (kDebugMode) {
+                            print('$y-$m-$d');
+                          }
+
+                          newPerawatan.kodeUnit = widget.perangkat.kodeUnit;
+                          newPerawatan.tanggal = '$y-$m-$d';
+
+                          var route = MaterialPageRoute(
+                            builder: (BuildContext context) => AddPerawatanResult(
+                              newPerawatan: newPerawatan,
+                              perangkat: 'komputer',
+                            ),
                           );
+                          Navigator.of(context).push(route);
                         }
                       },
                     ),
@@ -222,137 +229,4 @@ class _AddPerawatanState extends State<AddPerawatan> {
       ),
     );
   }
-}
-
-class AddPerawatanResult extends StatefulWidget {
-  const AddPerawatanResult({Key? key, required this.newPerawatan}) : super(key: key);
-
-  final Perawatan newPerawatan;
-
-  @override
-  State<AddPerawatanResult> createState() => _AddPerawatanResultState();
-}
-
-class _AddPerawatanResultState extends State<AddPerawatanResult> {
-  Future<String>? postData() async {
-    final uri = Uri(
-      scheme: 'http',
-      host: iPAddress,
-      path: '$apiPath/createNewPerawatan/',
-      queryParameters: {
-        'kode_unit': widget.newPerawatan.kodeUnit,
-        'tanggal_pengecekan': widget.newPerawatan.tanggal,
-        'pembersihan': boolToStr(widget.newPerawatan.pembersihan),
-        'pengecekan_chipset': boolToStr(widget.newPerawatan.pengecekanChipset),
-        'scan_virus': boolToStr(widget.newPerawatan.scanVirus),
-        'pembersihan_temporary': boolToStr(widget.newPerawatan.pembersihanTemporary),
-        'pengecekan_software': boolToStr(widget.newPerawatan.pengecekanSoftware),
-        'install_update_driver': boolToStr(widget.newPerawatan.installUpdateDriver),
-        'keterangan': widget.newPerawatan.keterangan,
-        'nama_teknisi': widget.newPerawatan.teknisi,
-      },
-    );
-
-    final Response response;
-    try {
-      response = await post(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
-
-    if (int.parse(response.body) == 1) {
-      return int.parse(response.body).toString();
-    } else {
-      throw Exception('Gagal insert ke database');
-    }
-  }
-
-  late Future<String>? myFuture = postData();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: mxAppBar(
-        title: 'Tambah perangkat baru',
-        leading: Builder(
-          builder: ((context) {
-            return IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () {
-                Navigator.maybePop(context);
-              },
-              tooltip: 'Kembali',
-            );
-          }),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: FutureBuilder<String>(
-          future: myFuture,
-          builder: ((context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return mxDataLoading(text: 'Sending data...');
-              case ConnectionState.done:
-              default:
-                if (snapshot.hasData) {
-                  return mxErrorFuture(
-                    icon: Icons.check,
-                    iconColor: Colors.green,
-                    textColor: Colors.blue,
-                    snapshotErr: 'Insert data berhasil',
-                    labelBtn: 'Lihat data',
-                    iconRefresh: Icons.list,
-                    onPress: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                  );
-                } else if (snapshot.hasError) {
-                  if (snapshot.error.toString() == errorConnection) {
-                    return mxErrorFuture(
-                      snapshotErr: snapshot.error.toString(),
-                      labelBtn: 'Coba lagi',
-                      onPress: () {
-                        setState(() {
-                          myFuture = postData();
-                        });
-                      },
-                    );
-                  } else {
-                    return mxErrorFuture(
-                      icon: Icons.do_not_disturb_alt_outlined,
-                      snapshotErr: '${snapshot.error}',
-                      labelBtn: 'Lihat data',
-                      iconRefresh: Icons.home_outlined,
-                      onPress: () {
-                        setState(() {
-                          // var route = MaterialPageRoute(
-                          //   builder: (BuildContext context) => const DataRuangan(),
-                          // );
-                          // Navigator.of(context).pushReplacement(route);
-                          // int count = 0;
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-                        });
-                      },
-                    );
-                  }
-                }
-            }
-            return mxDataLoading(text: 'Sending data...');
-          }),
-        ),
-      ),
-    );
-  }
-}
-
-Widget mXcheckBoxListTile({required title, required Function(bool?)? onChanged, required bool value}) {
-  return CheckboxListTile(
-    title: Text(
-      title,
-      style: TextStyle(color: value ? Colors.blue : Colors.grey[800]),
-    ),
-    onChanged: onChanged,
-    value: value,
-  );
 }

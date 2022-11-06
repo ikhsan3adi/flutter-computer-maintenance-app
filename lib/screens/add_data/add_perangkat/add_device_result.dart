@@ -4,11 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:project_maintenance_app/customClasses/data.dart';
-import 'package:project_maintenance_app/customClasses/myBuilder.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
-import 'package:project_maintenance_app/customClasses/myTextButton.dart';
-import 'package:project_maintenance_app/pages/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
+import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 
@@ -25,9 +26,10 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
   Future<String>? postData() async {
     final uri = Uri(
       scheme: 'http',
-      host: iPAddress,
-      path: '$apiPath/createNewPerangkat/',
+      host: url,
+      path: '$addressPath/createNewPerangkat/',
       queryParameters: {
+        'perangkat': widget.newPerangkat.perangkat,
         'nama_user': widget.newPerangkat.namaUser,
         'nama_unit': widget.newPerangkat.namaUnit,
         'type': widget.newPerangkat.type,
@@ -178,11 +180,8 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
 
     Uri uploadUrl = Uri(
       scheme: 'http',
-      host: iPAddress,
-      path: '$apiPath/saveQR.php',
-      // queryParameters: {
-      //   "name": fileName,
-      // },
+      host: url,
+      path: '$addressPath/saveQR.php',
     );
 
     var response = await http.post(
@@ -207,7 +206,7 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
   }
 }
 
-Widget qrView({required String qrData, required textUser, double elevation = 1.0}) {
+Widget qrView({required String qrData, required textUser, double elevation = 1.0, String perangkat = 'komputer'}) {
   return SingleChildScrollView(
     child: Card(
       elevation: elevation,
@@ -221,10 +220,22 @@ Widget qrView({required String qrData, required textUser, double elevation = 1.0
               size: 200,
             ),
             const SizedBox(height: 20),
-            blueBigText(
-              text: qrData,
-              color: Colors.black,
-              size: 24,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  perangkat == 'komputer' ? Icons.computer_outlined : Icons.print,
+                  color: Colors.black,
+                ),
+                const SizedBox(width: 15),
+                blueBigText(
+                  text: qrData,
+                  color: Colors.black,
+                  size: 24,
+                ),
+                const SizedBox(width: 15),
+              ],
             ),
             Text(
               'User : $textUser',

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:project_maintenance_app/customClasses/data.dart';
-import 'package:project_maintenance_app/customClasses/myBuilder.dart';
-import 'package:project_maintenance_app/customClasses/myFormField.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
-import 'package:project_maintenance_app/customClasses/myTextButton.dart';
-import 'package:project_maintenance_app/pages/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
+import 'package:project_maintenance_app/custom_widget/myFormField.dart';
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
+import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 
 class AddRuangan extends StatefulWidget {
   const AddRuangan({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class AddRuangan extends StatefulWidget {
 
 class _AddRuanganState extends State<AddRuangan> {
   final formKey = GlobalKey<FormState>();
+  final focusNode = FocusNode();
 
   Ruangan newRuangan = Ruangan(id: '', namaRuangan: '', kode: '');
 
@@ -73,6 +75,7 @@ class _AddRuanganState extends State<AddRuangan> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextFormField(
+                      focusNode: focusNode,
                       textController: newRuangan.kode,
                       labelText: 'Kode ruangan',
                       onChanged: (value) {
@@ -97,12 +100,13 @@ class _AddRuanganState extends State<AddRuangan> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextButtonNoIcon(
-                      buttonPadding: 20,
+                      buttonPadding: 15,
                       hasOutline: false,
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
                         if (isValidForm) {
+                          focusNode.unfocus();
                           setState(
                             () {
                               var route = MaterialPageRoute(builder: (BuildContext context) => AddRuanganResult(newRuangan: newRuangan));
@@ -168,8 +172,7 @@ class _AddRuanganResultState extends State<AddRuanganResult> {
                   iconRefresh: Icons.home_outlined,
                   onPress: () {
                     setState(() {
-                      int count = 0;
-                      Navigator.of(context).popUntil((_) => count++ >= 2);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     });
                   },
                 );
@@ -217,8 +220,8 @@ class _AddRuanganResultState extends State<AddRuanganResult> {
   Future<String>? postData() async {
     final uri = Uri(
         scheme: 'http',
-        host: iPAddress,
-        path: '$apiPath/createNewRuangan/',
+        host: url,
+        path: '$addressPath/createNewRuangan/',
         queryParameters: {'nama_ruangan': widget.newRuangan.namaRuangan, 'kode': widget.newRuangan.kode});
 
     final Response response;

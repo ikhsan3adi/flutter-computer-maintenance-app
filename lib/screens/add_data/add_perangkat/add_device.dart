@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:project_maintenance_app/customClasses/data.dart';
-import 'package:project_maintenance_app/customClasses/myScaffold.dart';
-import 'package:project_maintenance_app/customClasses/myTextButton.dart';
-import 'package:project_maintenance_app/customClasses/myFormField.dart';
-import 'package:project_maintenance_app/pages/manageData/add_device_result.dart';
-import 'package:project_maintenance_app/pages/manageData/ruangan_page.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
+import 'package:project_maintenance_app/custom_widget/myFormField.dart';
+import 'package:project_maintenance_app/screens/add_data/add_perangkat/add_device_result.dart';
+import 'package:project_maintenance_app/screens/show_data/ruangan.dart';
 
 class AddDevice extends StatefulWidget {
   const AddDevice({Key? key, required this.ruangan}) : super(key: key);
@@ -17,11 +17,13 @@ class AddDevice extends StatefulWidget {
 
 class _AddDeviceState extends State<AddDevice> {
   final formKey = GlobalKey<FormState>();
+  final focusNode = FocusNode();
 
   String placeholderRuangan = 'Pilih ruangan';
 
   Perangkat newPerangkat = Perangkat(
     kodeUnit: '',
+    perangkat: 'komputer',
     namaUser: '',
     namaUnit: '',
     type: '',
@@ -53,7 +55,7 @@ class _AddDeviceState extends State<AddDevice> {
         ),
       ),
       body: Container(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
         child: Form(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           key: formKey,
@@ -110,6 +112,33 @@ class _AddDeviceState extends State<AddDevice> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                    child: DropdownButtonFormField<String>(
+                      validator: (value) {
+                        if (value == placeholderRuangan) {
+                          return 'Silakan pilih ruangan';
+                        } else {
+                          return null;
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.home),
+                        label: Text('Jenis perangkat'),
+                      ),
+                      value: newPerangkat.perangkat,
+                      items: const [
+                        DropdownMenuItem<String>(value: 'komputer', child: Text('Komputer')),
+                        DropdownMenuItem<String>(value: 'printer', child: Text('Printer'))
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          newPerangkat.perangkat = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextFormField(
                       textController: newPerangkat.type,
                       labelText: 'Type',
@@ -160,6 +189,7 @@ class _AddDeviceState extends State<AddDevice> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextFormField(
+                      focusNode: focusNode,
                       textController: newPerangkat.keterangan,
                       labelText: 'Keterangan',
                       icon: Icons.more,
@@ -172,12 +202,13 @@ class _AddDeviceState extends State<AddDevice> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextButtonNoIcon(
-                      buttonPadding: 20,
+                      buttonPadding: 15,
                       hasOutline: false,
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
                         if (isValidForm) {
+                          focusNode.unfocus();
                           if (!dropDownChanged) {
                             newPerangkat.ruangan = widget.ruangan;
                           }

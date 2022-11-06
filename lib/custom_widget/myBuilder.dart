@@ -2,17 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:project_maintenance_app/customClasses/myTextButton.dart';
-
-Widget mxListViewBuilder({required snapshot, required itemBuilder, VoidCallback? onTap}) {
-  return ListView.builder(
-    itemCount: snapshot.data!.length,
-    itemBuilder: itemBuilder,
-  );
-}
+import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
+import 'package:project_maintenance_app/custom_widget/mycolor.dart';
+import 'package:project_maintenance_app/main.dart';
 
 Widget mxCardListTile({
-  required snapshot,
   index,
   required Text titleText,
   String? subtitleText,
@@ -27,8 +21,13 @@ Widget mxCardListTile({
   Widget? trailing = const Icon(Icons.more_vert_outlined),
   EdgeInsetsGeometry? padding = const EdgeInsets.symmetric(horizontal: 16),
 }) {
-  cardColor ??= index % 2 == 0 ? Colors.white : Colors.lightBlue[50];
-
+  if (index != null) {
+    if (currentTheme.value == ThemeMode.light) {
+      cardColor ??= index % 2 == 0 ? Colors.white : Colors.lightBlue[50];
+    } else {
+      cardColor ??= index % 2 == 0 ? null : const Color.fromARGB(255, 54, 71, 78);
+    }
+  }
   return Card(
     color: cardColor,
     child: ListTile(
@@ -40,7 +39,7 @@ Widget mxCardListTile({
         child: childLeading,
       ),
       title: titleText,
-      subtitle: Text(subtitleText!),
+      subtitle: subtitleText != null ? Text(subtitleText) : null,
       onTap: onTap,
       isThreeLine: isThreeLines,
       trailing: hasTrailing ? trailing : null,
@@ -103,14 +102,12 @@ Widget mxDataLoading({String? text = 'Loading data'}) {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SpinKitFadingCube(
-          color: Colors.blueAccent,
-        ),
+        SpinKitFadingCube(color: colorPrimary),
         const SizedBox(height: 30),
         Text(
           text!,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.blueAccent, fontSize: 18),
+          style: TextStyle(color: colorPrimary, fontSize: 18),
         ),
       ],
     ),

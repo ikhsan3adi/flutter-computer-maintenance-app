@@ -1,43 +1,43 @@
-// ignore_for_file: use_build_context_synchronously
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:project_maintenance_app/pages/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/main.dart';
+import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class Loading extends StatefulWidget {
-  const Loading({Key? key}) : super(key: key);
-
-  @override
-  State<Loading> createState() => _LoadingState();
-}
 
 late SharedPreferences preferences;
 
-class _LoadingState extends State<Loading> {
-  Future getData() async {
+class LoadingPage extends StatelessWidget {
+  const LoadingPage({Key? key}) : super(key: key);
+
+  Future getData(context) async {
     preferences = await SharedPreferences.getInstance();
+    bool? useDark = preferences.getBool('useDarkTheme');
 
-    String? ip = preferences.getString('IP');
+    if (useDark != null) changeToDarkTheme(dark: useDark);
 
-    if (ip != null) {
-      iPAddress = preferences.getString('IP')!;
+    String? savedUrl = preferences.getString('URL');
+    bool? loggedIn = preferences.getBool('loggedIn');
+
+    if (savedUrl != null) url = preferences.getString('URL')!;
+
+    loggedIn ??= false;
+
+    if (loggedIn) {
+      teknisi = Teknisi.fromJson(jsonDecode(preferences.getString('teknisi')!));
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
     }
-
-    // replace future with connection checking
-    await Future.delayed(const Duration(milliseconds: 1500));
-
-    Navigator.pushReplacementNamed(context, '/home');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getData();
   }
 
   @override
   Widget build(BuildContext context) {
+    getData(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -46,7 +46,7 @@ class _LoadingState extends State<Loading> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               SpinKitFadingCube(
-                color: Colors.blueAccent,
+                color: Colors.teal,
               ),
               SizedBox(
                 height: 40,
