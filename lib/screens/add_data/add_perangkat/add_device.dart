@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
@@ -203,7 +203,6 @@ class _AddDeviceState extends State<AddDevice> {
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextButtonNoIcon(
                       buttonPadding: 15,
-                      hasOutline: false,
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();

@@ -6,7 +6,7 @@ import 'package:project_maintenance_app/pages/core_page.dart';
 import 'package:project_maintenance_app/pages/loading_page.dart';
 
 String defaultIp = '192.168.1.100';
-String defaultUrl = 'mymx.000webhostapp.com';
+String defaultUrl = 'mx-maintenance-data-server.000webhostapp.com';
 
 String url = defaultUrl;
 
@@ -135,28 +135,27 @@ class _IPAddressPageState extends State<IPAddressPage> {
                   onPress: () {
                     final isValidForm = formKey.currentState!.validate();
                     if (isValidForm) {
-                      setState(
-                        () {
-                          if (useLocalhost) {
-                            url = newIPAddress;
-                            preferences.setString('IP', newIPAddress);
-                          } else {
-                            url = newHostAddress;
-                            preferences.setString('HOST', newHostAddress);
-                          }
+                      setState(() {
+                        if (useLocalhost) {
+                          url = newIPAddress;
+                          preferences.setString('IP', newIPAddress);
+                        } else {
+                          url = newHostAddress;
+                          preferences.setString('HOST', newHostAddress);
+                        }
 
-                          // drawerUrlText.value = url;
+                        // drawerUrlText.value = url;
 
-                          preferences.setBool('useLocal', useLocalhost);
-                          preferences.setString('URL', url);
+                        preferences.setBool('useLocal', useLocalhost);
+                        preferences.setString('URL', url);
 
-                          closeDrawer();
-                          Navigator.maybePop(context);
-                          if (kDebugMode) {
-                            print("Url Updated to : $url");
-                          }
-                        },
-                      );
+                        closeDrawer();
+                        Navigator.maybePop(context);
+
+                        if (kDebugMode) {
+                          print("Url Updated to : $url");
+                        }
+                      });
                     }
                   },
                 ),
@@ -169,6 +168,7 @@ class _IPAddressPageState extends State<IPAddressPage> {
                         onChanged: (value) {
                           setState(() {
                             useLocalhost = value;
+                            url = value ? defaultIp : defaultUrl;
 
                             focusNode.unfocus();
                             Future.delayed(const Duration(milliseconds: 500)).then((value) => focusNode.requestFocus());

@@ -5,15 +5,16 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myDrawer.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
+import 'package:project_maintenance_app/pages/core_page.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/main.dart';
-import 'package:project_maintenance_app/screens/add_data/add_teknisi.dart';
 import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/pages/loading_page.dart';
 
@@ -36,6 +37,10 @@ class _LoginPageState extends State<LoginPage> {
   late String password = '';
 
   bool passwordVisible = true;
+
+  bool asAdmin = false;
+
+  String type = ctxTeknisi;
 
   @override
   Widget build(BuildContext context) {
@@ -143,35 +148,53 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Belum terdaftar?',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
+                    // Padding(
+                    //   padding: const EdgeInsets.only(top: 10),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       const Text(
+                    //         'Belum terdaftar?',
+                    //         textAlign: TextAlign.center,
+                    //         style: TextStyle(
+                    //           fontSize: 16,
+                    //         ),
+                    //       ),
+                    //       TextButton(
+                    //         onPressed: () {
+                    //           setState(() {
+                    //             focusNode.unfocus();
+                    //             var route = MaterialPageRoute(builder: (context) => const AddTeknisi());
+                    //             Navigator.push(context, route);
+                    //           });
+                    //         },
+                    //         child: blueBigText(
+                    //           text: 'Buat user teknisi',
+                    //           align: TextAlign.center,
+                    //           size: 16,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    Flexible(
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 5),
+                        title: const Text('Login sebagai admin'),
+                        trailing: Switch.adaptive(
+                            value: asAdmin,
+                            onChanged: (value) {
                               setState(() {
-                                focusNode.unfocus();
-                                var route = MaterialPageRoute(builder: (context) => const AddTeknisi());
-                                Navigator.push(context, route);
+                                asAdmin = !asAdmin;
+                                if (!value) {
+                                  type = ctxTeknisi;
+                                } else {
+                                  type = 'admin';
+                                }
                               });
-                            },
-                            child: blueBigText(
-                              text: 'Buat user teknisi',
-                              align: TextAlign.center,
-                              size: 16,
-                            ),
-                          ),
-                        ],
+                            }),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -186,31 +209,33 @@ class _LoginPageState extends State<LoginPage> {
   Future<bool> login() async {
     setState(() => loginLoading = loadingWidget());
 
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/loginTeknisi/',
-      queryParameters: {
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxTeknisi,
+      action: actLogin,
+      body: {
         'username': username,
         'password': password,
+        'type': type,
       },
     );
 
-    final Response response;
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (kDebugMode) {
+      print(response.body.toString());
+      print(teknisi.nama);
+    }
 
     try {
-      response = await get(uri);
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (kDebugMode) {
-        print(response.body.toString());
-      }
-
       if (response.body == '0') {
         return false;
       } else {
         teknisi = Teknisi.fromJson(jsonDecode(response.body.toString()));
         preferences.setString('teknisi', response.body.toString());
+
+        type == 'admin' ? admin = true : admin = false;
+
         return true;
       }
     } catch (e) {

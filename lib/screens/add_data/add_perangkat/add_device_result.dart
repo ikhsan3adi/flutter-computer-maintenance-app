@@ -4,12 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/helper.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 
@@ -24,11 +24,11 @@ class AddDeviceResult extends StatefulWidget {
 
 class _AddDeviceResultState extends State<AddDeviceResult> {
   Future<String>? postData() async {
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/createNewPerangkat/',
-      queryParameters: {
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxDevice,
+      action: actCreate,
+      body: {
         'perangkat': widget.newPerangkat.perangkat,
         'nama_user': widget.newPerangkat.namaUser,
         'nama_unit': widget.newPerangkat.namaUnit,
@@ -38,27 +38,20 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
       },
     );
 
-    final http.Response response;
-    try {
-      response = await http.get(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
-
     if (response.body.toString() == 'error') {
       throw Exception('Gagal insert ke database');
-    } else {
-      String kodeUnit = response.body.trim();
-
-      widget.newPerangkat.kodeUnit = kodeUnit;
-      final sScontroller = ScreenshotController();
-
-      final Uint8List bytes = await sScontroller.captureFromWidget(
-        Material(child: qrView(qrData: kodeUnit, textUser: widget.newPerangkat.namaUser, elevation: 0)),
-      );
-      saveImage(bytes, widget.newPerangkat);
-      return kodeUnit;
     }
+
+    String kodeUnit = response.body.trim();
+
+    widget.newPerangkat.kodeUnit = kodeUnit;
+    final sScontroller = ScreenshotController();
+
+    final Uint8List bytes = await sScontroller.captureFromWidget(
+      Material(child: qrView(perangkat: widget.newPerangkat.perangkat, qrData: kodeUnit, textUser: widget.newPerangkat.namaUser, elevation: 0)),
+    );
+    saveImage(bytes, widget.newPerangkat);
+    return kodeUnit;
   }
 
   @override
@@ -111,7 +104,7 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
                             SizedBox(height: 15),
                           ],
                         ),
-                        qrView(qrData: qrData, textUser: widget.newPerangkat.namaUser),
+                        qrView(perangkat: widget.newPerangkat.perangkat, qrData: qrData, textUser: widget.newPerangkat.namaUser),
                         const SizedBox(height: 15),
                         mxTextButton(
                           label: 'Lihat data',
@@ -178,31 +171,27 @@ class _AddDeviceResultState extends State<AddDeviceResult> {
 
     String baseImage = base64Encode(bytes);
 
-    Uri uploadUrl = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/saveQR.php',
-    );
-
-    var response = await http.post(
-      uploadUrl,
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxDevice,
+      action: actSaveQR,
       body: {
         "image": baseImage,
         "name": fileName.toString(),
       },
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.toString() == '0') {
-        Fluttertoast.showToast(msg: 'Gagal menyimpan QR ke server\nFile bermasalah');
-      } else {
-        Fluttertoast.showToast(msg: 'Berhasil menyimpan QR ke server');
-      }
-      // print(response.body.toString());
-    } else {
+    if (response.statusCode != 200) {
       Fluttertoast.showToast(msg: 'Gagal terhubung ke server');
-      // print("Error during connection to server");
+      return;
     }
+
+    if (response.body.toString() == '0') {
+      Fluttertoast.showToast(msg: 'Gagal menyimpan QR ke server\nFile bermasalah');
+      return;
+    }
+
+    Fluttertoast.showToast(msg: 'Berhasil menyimpan QR ke server');
   }
 }
 

@@ -3,20 +3,20 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myFloatingActionButton.dart';
 import 'package:project_maintenance_app/custom_widget/mycolor.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/main.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan.dart';
 import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perangkat/add_device.dart';
 import 'package:project_maintenance_app/pages/core_page.dart';
 import 'package:project_maintenance_app/screens/show_data/dataPerawatan.dart';
-import 'package:project_maintenance_app/screens/show_data/ruangan.dart';
 
 // fake data
 List<Perangkat> dummyPerangkat = [
@@ -61,31 +61,6 @@ List<Perangkat> dummyPerangkat = [
       keterangan: 'OOOOOMAAAGAAAA'),
 ];
 
-Future<List<Perangkat>> downloadDeviceJSON(String ruangan, String jenis) async {
-  Response? response;
-  try {
-    response = await get(Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/getPerangkat/',
-      queryParameters: {
-        'ruangan': ruangan,
-        'perangkat': jenis,
-        'mode': 'select',
-      },
-    ));
-  } catch (e) {
-    throw Exception(errorConnection);
-  }
-
-  try {
-    List device = json.decode(response.body);
-    return device.map((device) => Perangkat.fromJson(device)).toList();
-  } catch (e) {
-    throw Exception(errorDataEmpty);
-  }
-}
-
 class DataDevice extends StatefulWidget {
   const DataDevice({Key? key, required this.ruangan, required this.jenis}) : super(key: key);
 
@@ -97,13 +72,33 @@ class DataDevice extends StatefulWidget {
 }
 
 class _DataDeviceState extends State<DataDevice> {
+  // fetch data from API
+  Future<List<Perangkat>> fetchDataPerangkat(String ruangan, String jenis) async {
+    http.Response? response = await queryData(
+      httpVerbs: httpGET,
+      context: ctxDevice,
+      action: actSelect,
+      extraQueryParameters: {
+        "ruangan": ruangan,
+        "perangkat": jenis,
+      },
+    );
+
+    try {
+      List device = json.decode(response.body);
+      return device.map((device) => Perangkat.fromJson(device)).toList();
+    } catch (e) {
+      throw Exception(errorDataEmpty);
+    }
+  }
+
   late Future<List<Perangkat>> myFuture;
 
   @override
   void initState() {
     super.initState();
 
-    myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
+    myFuture = fetchDataPerangkat(widget.ruangan.namaRuangan, widget.jenis);
   }
 
   @override
@@ -132,7 +127,7 @@ class _DataDeviceState extends State<DataDevice> {
         onRefresh: () {
           return Future(() async {
             setState(() {
-              myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
+              myFuture = fetchDataPerangkat(widget.ruangan.namaRuangan, widget.jenis);
             });
           });
         },
@@ -177,41 +172,7 @@ class _DataDeviceState extends State<DataDevice> {
                                         ),
                                       ),
                                       PopupMenuItem(
-                                        onTap: (() async {
-                                          String kodeUnit = snapshot.data![index].kodeUnit;
-
-                                          bool b = await openDeleteDialog(context: context, kodeUnit: kodeUnit);
-
-                                          if (!b) {
-                                            return;
-                                          } else {
-                                            final uri = Uri(
-                                              scheme: 'http',
-                                              host: url,
-                                              path: '$addressPath/deleteData/',
-                                              queryParameters: {
-                                                'tipe': 'Perangkat',
-                                                'kode_unit': kodeUnit,
-                                              },
-                                            );
-
-                                            var response = await post(uri);
-
-                                            if (response.statusCode == 200) {
-                                              if (int.parse(response.body.toString()) == 1) {
-                                                setState(() {
-                                                  myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
-                                                  Fluttertoast.showToast(msg: 'Hapus data $kodeUnit berhasil');
-                                                  // print(response.body);
-                                                });
-                                              } else {
-                                                Fluttertoast.showToast(msg: 'Kesalahan script php');
-                                              }
-                                            } else {
-                                              Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server');
-                                            }
-                                          }
-                                        }),
+                                        onTap: () async => await deleteDevice(snapshot.data![index].kodeUnit),
                                         child: Row(
                                           children: const [
                                             Icon(Icons.delete),
@@ -251,7 +212,7 @@ class _DataDeviceState extends State<DataDevice> {
                       snapshotErr: errMsg,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
+                          myFuture = fetchDataPerangkat(widget.ruangan.namaRuangan, widget.jenis);
                         });
                       },
                     );
@@ -262,7 +223,7 @@ class _DataDeviceState extends State<DataDevice> {
                       textColor: Colors.grey,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadDeviceJSON(widget.ruangan.namaRuangan, widget.jenis);
+                          myFuture = fetchDataPerangkat(widget.ruangan.namaRuangan, widget.jenis);
                         });
                       },
                     );
@@ -280,35 +241,66 @@ class _DataDeviceState extends State<DataDevice> {
         tooltip: 'Tambah data perangkat',
         onPressed: () {
           var route = MaterialPageRoute(builder: ((context) => AddDevice(ruangan: widget.ruangan.namaRuangan)));
-          pushSecondHome(route: route);
+          pushRootRoute(route: route);
         },
       ),
     );
   }
-}
 
-Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String kodeUnit}) {
-  return showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Konfirmasi'),
-        content: Text('Apakah yakin ingin menghapus $kodeUnit?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text('Tidak'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('Ya'),
-          )
-        ],
-      );
-    },
-  );
+  Future<void> deleteDevice(kodeUnit) async {
+    bool b = await openDeleteDialog(context: context, kodeUnit: kodeUnit);
+
+    if (!b) {
+      return;
+    }
+
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxDevice,
+      action: actDelete,
+      body: {'kode_unit': kodeUnit},
+    );
+
+    if (response.statusCode != 200) {
+      Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server');
+      return;
+    }
+
+    if (int.parse(response.body.toString()) != 1) {
+      Fluttertoast.showToast(msg: 'Kesalahan script php');
+      return;
+    }
+
+    setState(() {
+      myFuture = fetchDataPerangkat(widget.ruangan.namaRuangan, widget.jenis);
+      Fluttertoast.showToast(msg: 'Hapus data $kodeUnit berhasil');
+      // print(response.body);
+    });
+  }
+
+  Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String kodeUnit}) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: Text('Apakah yakin ingin menghapus $kodeUnit?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Ya'),
+            )
+          ],
+        );
+      },
+    );
+  }
 }

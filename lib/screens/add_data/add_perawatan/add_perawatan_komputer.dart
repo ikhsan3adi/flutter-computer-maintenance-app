@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan.dart';
 
 class AddPerawatanKomputer extends StatefulWidget {
@@ -89,24 +89,45 @@ class _AddPerawatanKomputerState extends State<AddPerawatanKomputer> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 15),
-                  mxTextFormField(
-                    textController: newPerawatan.teknisi,
-                    labelText: 'Nama teknisi',
-                    icon: Icons.person_search,
-                    onChanged: (v) {
-                      newPerawatan.teknisi = v!;
-                    },
+                  DropdownButtonFormField<String>(
                     validator: (value) {
-                      if (value!.length > 32) {
-                        return 'Maks. 32 karakter';
-                      } else if (value.isEmpty) {
-                        return 'Nama teknisi tidak boleh kosong!';
+                      if (value!.isEmpty) {
+                        return 'Silakan pilih teknisi';
                       } else {
                         return null;
                       }
                     },
-                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_search),
+                      label: Text('Nama teknisi'),
+                    ),
+                    value: teknisi.id,
+                    items: listTeknisi.map((e) => DropdownMenuItem<String>(value: e.id, child: Text(e.nama))).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        newPerawatan.teknisi = value!;
+                      });
+                    },
                   ),
+                  // mxTextFormField(
+                  //   textController: newPerawatan.teknisi,
+                  //   labelText: 'Nama teknisi',
+                  //   icon: Icons.person_search,
+                  //   onChanged: (v) {
+                  //     newPerawatan.teknisi = v!;
+                  //   },
+                  //   validator: (value) {
+                  //     if (value!.length > 32) {
+                  //       return 'Maks. 32 karakter';
+                  //     } else if (value.isEmpty) {
+                  //       return 'Nama teknisi tidak boleh kosong!';
+                  //     } else {
+                  //       return null;
+                  //     }
+                  //   },
+                  //   textCapitalization: TextCapitalization.words,
+                  // ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: Container(
@@ -191,33 +212,33 @@ class _AddPerawatanKomputerState extends State<AddPerawatanKomputer> {
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextButtonNoIcon(
                       buttonPadding: 20,
-                      hasOutline: false,
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
-                        if (isValidForm) {
-                          focusNode.unfocus();
-                          var currentTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
-                          var y = currentTime.toString().substring(0, 4);
-                          var m = currentTime.toString().substring(5, 7);
-                          var d = currentTime.toString().substring(8, 10);
+                        if (!isValidForm) return;
 
-                          if (kDebugMode) {
-                            print('$y-$m-$d');
-                          }
+                        focusNode.unfocus();
+                        var currentTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
-                          newPerawatan.kodeUnit = widget.perangkat.kodeUnit;
-                          newPerawatan.tanggal = '$y-$m-$d';
+                        var y = currentTime.toString().substring(0, 4);
+                        var m = currentTime.toString().substring(5, 7);
+                        var d = currentTime.toString().substring(8, 10);
 
-                          var route = MaterialPageRoute(
-                            builder: (BuildContext context) => AddPerawatanResult(
-                              newPerawatan: newPerawatan,
-                              perangkat: 'komputer',
-                            ),
-                          );
-                          Navigator.of(context).push(route);
+                        if (kDebugMode) {
+                          print('$y-$m-$d');
                         }
+
+                        newPerawatan.kodeUnit = widget.perangkat.kodeUnit;
+                        newPerawatan.tanggal = '$y-$m-$d';
+
+                        var route = MaterialPageRoute(
+                          builder: (BuildContext context) => AddPerawatanResult(
+                            newPerawatan: newPerawatan,
+                            perangkat: 'komputer',
+                          ),
+                        );
+                        Navigator.of(context).push(route);
                       },
                     ),
                   ),

@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:project_maintenance_app/custom_widget/mycolor.dart';
 
 Widget mxTextButton({
   double buttonPadding = 5,
@@ -44,23 +43,24 @@ Widget mxTextButtonNoIcon({
   required String label,
   double? labelFontSize,
   VoidCallback? onPress,
-  bool hasOutline = true,
+  // bool hasOutline = true,
 }) {
-  return TextButton(
+  return ElevatedButton(
     onPressed: onPress,
     style: ElevatedButton.styleFrom(
+      foregroundColor: Colors.white,
       // foregroundColor: hasOutline ? colorSecondary : Colors.white,
       // backgroundColor: hasOutline ? Colors.white : colorPrimary,
       alignment: Alignment.center,
       padding: EdgeInsets.all(buttonPadding),
       shape: RoundedRectangleBorder(
-        side: hasOutline ? BorderSide(color: colorSecondary, width: 3) : BorderSide.none,
+        // side: BorderSide.none,
         borderRadius: BorderRadius.circular(20),
       ),
     ),
     child: Text(
       label,
-      style: TextStyle(fontSize: labelFontSize, color: hasOutline ? Colors.blueAccent : Colors.white),
+      style: TextStyle(fontSize: labelFontSize, color: Colors.white),
     ),
   );
 }

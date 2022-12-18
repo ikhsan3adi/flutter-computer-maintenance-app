@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
-import 'package:project_maintenance_app/data/helper.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 
 class AddTeknisi extends StatefulWidget {
   const AddTeknisi({super.key});
@@ -27,15 +27,17 @@ class _AddTeknisiState extends State<AddTeknisi> {
   );
 
   var teknisiPassword = '';
+  var confirmPassword = '';
 
   bool passwordVisible = true;
+  bool conPasswordVisible = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: mxAppBar(title: 'Buat username'),
+        appBar: mxAppBar(title: 'Buat user'),
         body: Padding(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
           child: Form(
             autovalidateMode: AutovalidateMode.onUserInteraction,
             key: formKey,
@@ -94,7 +96,6 @@ class _AddTeknisiState extends State<AddTeknisi> {
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: mxTextFormField(
-                      focusNode: focusNode,
                       obscure: passwordVisible,
                       textController: teknisiPassword,
                       labelText: 'Kata Sandi',
@@ -121,6 +122,37 @@ class _AddTeknisiState extends State<AddTeknisi> {
                           setState(() => passwordVisible = !passwordVisible);
                         },
                         icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15),
+                    child: mxTextFormField(
+                      focusNode: focusNode,
+                      obscure: conPasswordVisible,
+                      textController: confirmPassword,
+                      labelText: 'Konfirmasi Kata Sandi',
+                      onChanged: (value) {
+                        confirmPassword = value;
+                      },
+                      icon: Icons.key,
+                      maxLength: 16,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'password tidak boleh kosong!';
+                        } else if (value != teknisiPassword) {
+                          return 'konfirmasi password tidak sesuai!';
+                        } else {
+                          return null;
+                        }
+                      },
+                      hintText: 'confirm password',
+                      textCapitalization: TextCapitalization.none,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() => conPasswordVisible = !conPasswordVisible);
+                        },
+                        icon: Icon(conPasswordVisible ? Icons.visibility : Icons.visibility_off),
                       ),
                     ),
                   ),
@@ -186,12 +218,12 @@ class AddTeknisiResult extends StatelessWidget {
             case ConnectionState.done:
             default:
               if (snapshot.hasData) {
-                Future.delayed(const Duration(seconds: 2)).then((value) => Navigator.of(context).popUntil((route) => route.isFirst));
+                Future.delayed(const Duration(seconds: 5)).then((value) => Navigator.of(context).popUntil((route) => route.isFirst));
                 return mxErrorFuture(
                   icon: Icons.check,
                   iconColor: Colors.green,
                   textColor: Colors.blue,
-                  snapshotErr: 'Insert data berhasil',
+                  snapshotErr: 'Buat user berhasil',
                   labelBtn: 'Login',
                   iconRefresh: Icons.login_outlined,
                   onPress: () {
@@ -231,23 +263,16 @@ class AddTeknisiResult extends StatelessWidget {
   }
 
   Future<bool>? postData() async {
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/createNewTeknisi/',
-      queryParameters: {
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxTeknisi,
+      action: actCreate,
+      body: {
         'username': newTeknisi.username,
         'nama_teknisi': newTeknisi.nama,
         'password': password,
       },
     );
-
-    final Response response;
-    try {
-      response = await get(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
 
     if (kDebugMode) {
       print(response.body.toString());

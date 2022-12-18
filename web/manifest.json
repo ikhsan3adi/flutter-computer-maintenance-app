@@ -1,6 +1,6 @@
 {
-    "name": "Perawatan komputer & printer",
-    "short_name": "Perawatan perangkat",
+    "name": "Maintenance App",
+    "short_name": "Apl Perawatan",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

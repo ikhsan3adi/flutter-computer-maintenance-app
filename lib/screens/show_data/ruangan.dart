@@ -3,53 +3,22 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myFloatingActionButton.dart';
 import 'package:project_maintenance_app/custom_widget/mycolor.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/main.dart';
 import 'package:project_maintenance_app/pages/core_page.dart';
 import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/screens/add_data/add_ruangan.dart';
 import 'package:project_maintenance_app/screens/show_data/choose_device_type.dart';
 
-// fake data
-List<Ruangan> dummyRuangan = [
-  Ruangan(id: "01", namaRuangan: "Umum", kode: "UM"),
-  Ruangan(id: "02", namaRuangan: "Fasilitasi", kode: "FS"),
-  Ruangan(id: "03", namaRuangan: "Keuangan", kode: "KU"),
-  Ruangan(id: "04", namaRuangan: "Tata Usaha", kode: "TU"),
-  Ruangan(id: "05", namaRuangan: "Humas", kode: "HM"),
-  Ruangan(id: "06", namaRuangan: "Persidangan", kode: "PS"),
-];
-
 List<Ruangan> realRuangan = [];
-
-Future<List<Ruangan>> downloadJSON() async {
-  Response? response;
-  try {
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/getRuangan/',
-    );
-    response = await get(uri);
-  } catch (e) {
-    throw Exception(errorConnection);
-  }
-
-  try {
-    List ruangan = json.decode(response.body);
-    realRuangan = ruangan.map((ruangan) => Ruangan.fromJson(ruangan)).toList();
-    return realRuangan;
-  } catch (e) {
-    throw Exception(errorDataEmpty);
-  }
-}
 
 class DataRuangan extends StatefulWidget {
   const DataRuangan({Key? key}) : super(key: key);
@@ -59,13 +28,25 @@ class DataRuangan extends StatefulWidget {
 }
 
 class _DataRuanganState extends State<DataRuangan> {
-  Future<List<Ruangan>> myFuture = downloadJSON();
+  // fetch data from API
+  Future<List<Ruangan>> fetchDataRuangan() async {
+    http.Response? response = await queryData(httpVerbs: httpGET, context: ctxRuangan, action: actSelect);
+
+    try {
+      List ruangan = json.decode(response.body);
+      realRuangan = ruangan.map((ruangan) => Ruangan.fromJson(ruangan)).toList();
+      return realRuangan;
+    } catch (e) {
+      throw Exception(errorDataEmpty);
+    }
+  }
+
+  late Future<List<Ruangan>> myFuture = fetchDataRuangan();
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print("[Data_ruangan] Current URL Address is : $url");
-    }
+    if (kDebugMode) print("[Data_ruangan] Current URL Address is : $url");
+
     return Scaffold(
       appBar: mxAppBar(
         title: 'Ruangan',
@@ -75,16 +56,13 @@ class _DataRuanganState extends State<DataRuangan> {
         // elevation: 0.75,
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          return Future(() {
-            setState(() {
-              myFuture = downloadJSON();
-            });
+        onRefresh: () async => Future(() {
+          setState(() {
+            myFuture = fetchDataRuangan();
           });
-        },
+        }),
         child: FutureBuilder<List<Ruangan>>(
-          future: connectToDatabase ? myFuture : null,
-          initialData: connectToDatabase ? null : dummyRuangan,
+          future: myFuture,
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
@@ -106,43 +84,7 @@ class _DataRuanganState extends State<DataRuangan> {
                               trailing: Builder(
                                 builder: ((context) {
                                   return IconButton(
-                                    onPressed: () async {
-                                      String ruangan = snapshot.data![index].namaRuangan;
-                                      String kodeRuangan = snapshot.data![index].kode;
-
-                                      bool b = await openDeleteDialog(context: context, ruangan: ruangan);
-
-                                      if (!b) {
-                                        return;
-                                      } else {
-                                        final uri = Uri(
-                                          scheme: 'http',
-                                          host: url,
-                                          path: '$addressPath/deleteData/',
-                                          queryParameters: {
-                                            'tipe': "Ruangan",
-                                            'kode_ruangan': kodeRuangan,
-                                          },
-                                        );
-
-                                        try {
-                                          var response = await post(uri);
-                                          if (kDebugMode) {
-                                            print(response.body);
-                                          }
-                                          if (response.body.toString() == '1') {
-                                            setState(() {
-                                              myFuture = downloadJSON();
-                                              Fluttertoast.showToast(msg: 'Hapus ruangan "$ruangan" berhasil');
-                                            });
-                                          } else {
-                                            Fluttertoast.showToast(msg: 'Kesalahan script php');
-                                          }
-                                        } catch (e) {
-                                          Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server, hapus ruangan "$ruangan" gagal : $e');
-                                        }
-                                      }
-                                    },
+                                    onPressed: () async => await deleteRuangan(snapshot.data![index].namaRuangan, snapshot.data![index].kode),
                                     icon: const Icon(Icons.delete_forever),
                                   );
                                 }),
@@ -173,7 +115,7 @@ class _DataRuanganState extends State<DataRuangan> {
                       snapshotErr: errMsg,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadJSON();
+                          myFuture = fetchDataRuangan();
                         });
                       },
                     );
@@ -184,7 +126,7 @@ class _DataRuanganState extends State<DataRuangan> {
                       textColor: Colors.grey,
                       onPress: () {
                         setState(() {
-                          myFuture = downloadJSON();
+                          myFuture = fetchDataRuangan();
                         });
                       },
                     );
@@ -202,7 +144,7 @@ class _DataRuanganState extends State<DataRuangan> {
         onPressed: () {
           var route = MaterialPageRoute(builder: ((context) => const AddRuangan()));
           Navigator.of(coreScaffoldKey.currentContext!).popUntil((route) => route.isFirst);
-          pushSecondHome(route: route);
+          pushRootRoute(route: route);
         },
       ),
     );
@@ -246,34 +188,54 @@ class _DataRuanganState extends State<DataRuangan> {
       },
     );
   }
-}
 
-void pushSecondHome({required MaterialPageRoute route}) {
-  Navigator.of(coreScaffoldKey.currentContext!).push(route);
-}
+  Future<void> deleteRuangan(String ruangan, String kodeRuangan) async {
+    bool b = await openDeleteDialog(context: context, ruangan: ruangan);
 
-Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String ruangan}) {
-  return showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Konfirmasi'),
-        content: Text('Apakah yakin ingin menghapus ruangan $ruangan?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text('Tidak'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('Ya'),
-          )
-        ],
-      );
-    },
-  );
+    if (!b) return;
+
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxRuangan,
+      action: actDelete,
+      body: {'kode_ruangan': kodeRuangan},
+    );
+
+    if (kDebugMode) print(response.body);
+
+    try {
+      if (int.parse(response.body) != 1) {
+        Fluttertoast.showToast(msg: 'Kesalahan script php');
+        return;
+      }
+      setState(() {
+        myFuture = fetchDataRuangan();
+        Fluttertoast.showToast(msg: 'Hapus ruangan "$ruangan" berhasil');
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Hapus ruangan "$ruangan" gagal : $e');
+    }
+  }
+
+  Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String ruangan}) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: Text('Apakah yakin ingin menghapus ruangan $ruangan?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Ya'),
+            )
+          ],
+        );
+      },
+    );
+  }
 }

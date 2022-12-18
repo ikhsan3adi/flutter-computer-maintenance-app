@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/helper.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 
 class AddRuangan extends StatefulWidget {
   const AddRuangan({Key? key}) : super(key: key);
@@ -101,19 +101,17 @@ class _AddRuanganState extends State<AddRuangan> {
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: mxTextButtonNoIcon(
                       buttonPadding: 15,
-                      hasOutline: false,
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
-                        if (isValidForm) {
-                          focusNode.unfocus();
-                          setState(
-                            () {
-                              var route = MaterialPageRoute(builder: (BuildContext context) => AddRuanganResult(newRuangan: newRuangan));
-                              Navigator.of(context).push(route);
-                            },
-                          );
-                        }
+
+                        if (!isValidForm) return;
+
+                        focusNode.unfocus();
+                        setState(() {
+                          var route = MaterialPageRoute(builder: (BuildContext context) => AddRuanganResult(newRuangan: newRuangan));
+                          Navigator.of(context).push(route);
+                        });
                       },
                     ),
                   ),
@@ -218,18 +216,15 @@ class _AddRuanganResultState extends State<AddRuanganResult> {
   }
 
   Future<String>? postData() async {
-    final uri = Uri(
-        scheme: 'http',
-        host: url,
-        path: '$addressPath/createNewRuangan/',
-        queryParameters: {'nama_ruangan': widget.newRuangan.namaRuangan, 'kode': widget.newRuangan.kode});
-
-    final Response response;
-    try {
-      response = await get(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxRuangan,
+      action: actCreate,
+      body: {
+        'nama_ruangan': widget.newRuangan.namaRuangan,
+        'kode': widget.newRuangan.kode,
+      },
+    );
 
     if (int.parse(response.body) == 1) {
       return int.parse(response.body).toString();

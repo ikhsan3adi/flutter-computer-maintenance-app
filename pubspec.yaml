@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.6 <3.0.0"
+  sdk: ">=2.17.6 <3.3.8"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -42,9 +42,13 @@ dependencies:
   screenshot: ^1.2.3
   path_provider: ^2.0.11
   shared_preferences: ^2.0.15
-  permission_handler: ^10.0.0
   fluttertoast: ^8.0.9
   sticky_grouped_list: ^3.1.0
+  printing: 5.0.0
+  
+# dependency_overrides:
+#   barcode: ^2.2.0
+#   qr: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +97,15 @@ flutter:
     - family: San Francisco
       fonts:
         - asset: assets/fonts/SF-Pro-Text-Regular.otf
+    - family:  Check
+      fonts:
+        - asset: assets/fonts/Check.ttf
+    - family:  Calibri
+      fonts:
+        - asset: assets/fonts/calibri.ttf
+        - asset: assets/fonts/calibrib.ttf
+          weight: 700
+
     # - family: Schyler
     #   fonts:
     #     - asset: fonts/Schyler-Regular.ttf

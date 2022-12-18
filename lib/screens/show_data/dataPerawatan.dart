@@ -3,68 +3,18 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/mycolor.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/main.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
+import 'package:project_maintenance_app/pages/core_page.dart';
+import 'package:project_maintenance_app/screens/print_data/print_perawatan.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
-
-// fake data
-List<PerawatanKomputer> dummyPerawatan = [
-  PerawatanKomputer(
-      id: 0,
-      kodeUnit: 'UM-01',
-      tanggal: '01-08-2022',
-      pembersihan: false,
-      pengecekanChipset: true,
-      scanVirus: true,
-      pembersihanTemporary: true,
-      pengecekanSoftware: true,
-      installUpdateDriver: true,
-      keterangan: 'sering bluescreen',
-      teknisi: 'Ikhsan'),
-  PerawatanKomputer(
-      id: 0,
-      kodeUnit: 'UM-01',
-      tanggal: '01-09-2022',
-      pembersihan: true,
-      pengecekanChipset: true,
-      scanVirus: true,
-      pembersihanTemporary: true,
-      pengecekanSoftware: true,
-      installUpdateDriver: true,
-      keterangan: 'aman',
-      teknisi: 'Rizky'),
-  PerawatanKomputer(
-      id: 0,
-      kodeUnit: 'UM-01',
-      tanggal: '01-10-2022',
-      pembersihan: false,
-      pengecekanChipset: true,
-      scanVirus: true,
-      pembersihanTemporary: true,
-      pengecekanSoftware: true,
-      installUpdateDriver: true,
-      keterangan: 'sip',
-      teknisi: 'Ilham'),
-  PerawatanKomputer(
-      id: 0,
-      kodeUnit: 'UM-01',
-      tanggal: '04-10-2022',
-      pembersihan: false,
-      pengecekanChipset: true,
-      scanVirus: true,
-      pembersihanTemporary: true,
-      pengecekanSoftware: true,
-      installUpdateDriver: true,
-      keterangan: 'sip',
-      teknisi: 'Ilham'),
-];
 
 class DataPerawatan extends StatefulWidget {
   const DataPerawatan({Key? key, required this.device}) : super(key: key);
@@ -76,19 +26,17 @@ class DataPerawatan extends StatefulWidget {
 }
 
 class _DataPerawatanState extends State<DataPerawatan> {
-  Future<List<Perawatan>> downloadPerawatanJSON(String kodeUnit, String perangkat) async {
-    Response? response;
-
-    try {
-      response = await get(Uri(
-        scheme: 'http',
-        host: url,
-        path: '$addressPath/getPerawatan/',
-        queryParameters: {'kode_unit': kodeUnit, 'perangkat': perangkat},
-      ));
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
+  // fetch data from API
+  Future<List<Perawatan>> fetchDataPerawatan(String kodeUnit, String perangkat) async {
+    http.Response? response = await queryData(
+      httpVerbs: httpGET,
+      context: ctxPerawatan,
+      action: actSelect,
+      extraQueryParameters: {
+        "kode_unit": kodeUnit,
+        "perangkat": perangkat,
+      },
+    );
 
     try {
       List perawatan = json.decode(response.body);
@@ -111,7 +59,7 @@ class _DataPerawatanState extends State<DataPerawatan> {
   void initState() {
     super.initState();
 
-    myFuture = downloadPerawatanJSON(
+    myFuture = fetchDataPerawatan(
       widget.device.kodeUnit,
       widget.device.perangkat,
     );
@@ -151,13 +99,7 @@ class _DataPerawatanState extends State<DataPerawatan> {
           const Divider(height: 1, thickness: 1),
           Flexible(
             child: RefreshIndicator(
-              onRefresh: () async {
-                return Future(() {
-                  setState(() {
-                    myFuture = downloadPerawatanJSON(widget.device.kodeUnit, widget.device.perangkat);
-                  });
-                });
-              },
+              onRefresh: () async => Future(() => setState(() => myFuture = fetchDataPerawatan(widget.device.kodeUnit, widget.device.perangkat))),
               child: FutureBuilder<List<Perawatan>>(
                 future: myFuture,
                 // initialData: connectToDatabase ? null : dummyPerawatan,
@@ -196,17 +138,49 @@ class _DataPerawatanState extends State<DataPerawatan> {
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                  margin: const EdgeInsets.symmetric(vertical: 5),
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                    color: colorSecondary,
-                                  ),
-                                  child: Text(
-                                    '${bulan[int.parse(month)]} $year',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                                separator(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${bulan[int.parse(month)]} $year',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                                      ),
+                                      SizedBox(
+                                        height: 24,
+                                        width: 35,
+                                        child: PopupMenuButton(
+                                          position: PopupMenuPosition.under,
+                                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              onTap: () {
+                                                var perawatans = snapshot.data!
+                                                    .where((e) => e.tanggal.substring(3, 5) == month && e.tanggal.substring(6) == year)
+                                                    .toList();
+
+                                                var route = MaterialPageRoute(builder: (context) {
+                                                  return PrintPerawatan(
+                                                    perawatan: perawatans,
+                                                    perangkat: widget.device,
+                                                    waktu: '${bulan[int.parse(month)]} $year',
+                                                  );
+                                                });
+                                                Navigator.of(coreScaffoldKey.currentContext!).push(route);
+                                              },
+                                              child: Row(
+                                                children: const [
+                                                  Icon(Icons.print),
+                                                  SizedBox(width: 10),
+                                                  Text('Print laporan'),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -223,7 +197,7 @@ class _DataPerawatanState extends State<DataPerawatan> {
                         snapshotErr: errMsg,
                         onPress: () {
                           setState(() {
-                            myFuture = downloadPerawatanJSON(widget.device.kodeUnit, widget.device.perangkat);
+                            myFuture = fetchDataPerawatan(widget.device.kodeUnit, widget.device.perangkat);
                           });
                         },
                       );
@@ -234,7 +208,7 @@ class _DataPerawatanState extends State<DataPerawatan> {
                         textColor: Colors.grey,
                         onPress: () {
                           setState(() {
-                            myFuture = downloadPerawatanJSON(widget.device.kodeUnit, widget.device.perangkat);
+                            myFuture = fetchDataPerawatan(widget.device.kodeUnit, widget.device.perangkat);
                           });
                         },
                       );
@@ -248,6 +222,18 @@ class _DataPerawatanState extends State<DataPerawatan> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget separator({Widget? child}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
+        color: colorSecondary,
+      ),
+      child: child,
     );
   }
 

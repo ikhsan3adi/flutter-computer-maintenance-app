@@ -1,4 +1,4 @@
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
 
 class Teknisi {
   String id;
@@ -15,7 +15,7 @@ class Teknisi {
     return Teknisi(
       id: jsonData['id'],
       username: jsonData['username'],
-      nama: jsonData['nama'],
+      nama: jsonData['nama_teknisi'],
     );
   }
 }

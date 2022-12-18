@@ -13,8 +13,8 @@ Widget mxCardListTile({
   VoidCallback? onTap,
   Widget? childLeading,
   foregroundImage,
-  Color? leadingBackgroundColor = Colors.blue,
-  Color? leadingForegroundColor = Colors.blue,
+  Color? leadingBackgroundColor = Colors.teal,
+  Color? leadingForegroundColor = Colors.teal,
   Color? cardColor,
   bool hasTrailing = false,
   bool isThreeLines = false,
@@ -102,12 +102,12 @@ Widget mxDataLoading({String? text = 'Loading data'}) {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SpinKitFadingCube(color: colorPrimary),
+        SpinKitFadingCube(color: colorSecondary),
         const SizedBox(height: 30),
         Text(
           text!,
           textAlign: TextAlign.center,
-          style: TextStyle(color: colorPrimary, fontSize: 18),
+          style: TextStyle(color: colorSecondary, fontSize: 18),
         ),
       ],
     ),

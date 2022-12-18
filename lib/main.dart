@@ -15,7 +15,7 @@ void main() {
           routes: {
             '/': (context) => const LoadingPage(),
             '/login': (context) => const LoginPage(),
-            '/home': (context) => const Core(),
+            '/home': (context) => Core(),
           },
           theme: ThemeData(
             brightness: Brightness.light,

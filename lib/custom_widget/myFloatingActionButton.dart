@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_maintenance_app/main.dart';
 
-Widget mxFloatingActionButton({required String label, String? tooltip, VoidCallback? onPressed}) {
+Widget mxFloatingActionButton({required String label, IconData icon = Icons.add, String? tooltip, VoidCallback? onPressed}) {
   return ValueListenableBuilder<ThemeMode>(
     valueListenable: currentTheme,
     builder: (context, value, _) {
@@ -13,8 +13,8 @@ Widget mxFloatingActionButton({required String label, String? tooltip, VoidCallb
         tooltip: tooltip,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(25))),
         label: Text(label),
-        icon: const Icon(
-          Icons.add,
+        icon: Icon(
+          icon,
           size: 30,
         ),
       );

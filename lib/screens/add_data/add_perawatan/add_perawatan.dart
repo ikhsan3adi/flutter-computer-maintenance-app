@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan_komputer.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan_printer.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/pages/core_page.dart';
+
+List<Teknisi> listTeknisi = [];
 
 class AddPerawatan extends StatelessWidget {
   const AddPerawatan({super.key, required this.perangkat});
@@ -38,78 +41,52 @@ class AddPerawatanResult extends StatefulWidget {
 }
 
 class _AddPerawatanResultState extends State<AddPerawatanResult> {
-  Future<String>? postDataKomputer() async {
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/createNewPerawatan/',
-      queryParameters: {
-        'perangkat': 'komputer',
-        'kode_unit': widget.newPerawatan.kodeUnit,
-        'tanggal': widget.newPerawatan.tanggal,
-        'pembersihan': boolToStr(widget.newPerawatan.pembersihan),
-        'pengecekan_chipset': boolToStr(widget.newPerawatan.pengecekanChipset),
-        'scan_virus': boolToStr(widget.newPerawatan.scanVirus),
-        'pembersihan_temporary': boolToStr(widget.newPerawatan.pembersihanTemporary),
-        'pengecekan_software': boolToStr(widget.newPerawatan.pengecekanSoftware),
-        'install_update_driver': boolToStr(widget.newPerawatan.installUpdateDriver),
-        'keterangan': widget.newPerawatan.keterangan,
-        'nama_teknisi': widget.newPerawatan.teknisi,
-      },
-    );
+  Future<String>? postData() async {
+    Map<String, dynamic> body;
 
-    final Response response;
-    try {
-      response = await post(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
-
-    if (int.parse(response.body) == 1) {
-      return int.parse(response.body).toString();
-    } else {
-      throw Exception('Gagal insert ke database');
-    }
-  }
-
-  Future<String>? postDataPrinter() async {
-    final uri = Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/createNewPerawatan/',
-      queryParameters: {
-        'perangkat': 'printer',
-        'kode_unit': widget.newPerawatan.kodeUnit,
-        'tanggal': widget.newPerawatan.tanggal,
-        'pembersihan': boolToStr(widget.newPerawatan.pembersihan),
-        'install_update_driver': boolToStr(widget.newPerawatan.installUpdateDriver),
-        'keterangan': widget.newPerawatan.keterangan,
-        'nama_teknisi': widget.newPerawatan.teknisi,
-      },
-    );
-
-    final Response response;
-    try {
-      response = await post(uri);
-    } catch (e) {
-      throw Exception(errorConnection);
-    }
-
-    if (int.parse(response.body) == 1) {
-      return int.parse(response.body).toString();
-    } else {
-      throw Exception('Gagal insert ke database');
-    }
-  }
-
-  Future<String>? switchPerangkatType() {
     switch (widget.perangkat) {
-      case 'komputer':
-        return postDataKomputer();
       case 'printer':
-        return postDataPrinter();
+        body = {
+          'kode_unit': widget.newPerawatan.kodeUnit,
+          'tanggal': widget.newPerawatan.tanggal,
+          'pembersihan': boolToStr(widget.newPerawatan.pembersihan),
+          'install_update_driver': boolToStr(widget.newPerawatan.installUpdateDriver),
+          'keterangan': widget.newPerawatan.keterangan,
+          'id_teknisi': widget.newPerawatan.teknisi,
+        };
+        break;
+      case 'komputer':
       default:
-        return postDataKomputer();
+        body = {
+          'kode_unit': widget.newPerawatan.kodeUnit,
+          'tanggal': widget.newPerawatan.tanggal,
+          'pembersihan': boolToStr(widget.newPerawatan.pembersihan),
+          'pengecekan_chipset': boolToStr(widget.newPerawatan.pengecekanChipset),
+          'scan_virus': boolToStr(widget.newPerawatan.scanVirus),
+          'pembersihan_temporary': boolToStr(widget.newPerawatan.pembersihanTemporary),
+          'pengecekan_software': boolToStr(widget.newPerawatan.pengecekanSoftware),
+          'install_update_driver': boolToStr(widget.newPerawatan.installUpdateDriver),
+          'keterangan': widget.newPerawatan.keterangan,
+          'id_teknisi': widget.newPerawatan.teknisi,
+        };
+    }
+
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxPerawatan,
+      action: actCreate,
+      extraQueryParameters: {'perangkat': widget.perangkat},
+      body: body,
+    );
+
+    if (kDebugMode) {
+      print(response.body);
+    }
+
+    if (int.parse(response.body) == 1) {
+      return int.parse(response.body).toString();
+    } else {
+      throw Exception('Gagal insert ke database');
     }
   }
 
@@ -117,7 +94,7 @@ class _AddPerawatanResultState extends State<AddPerawatanResult> {
 
   @override
   Widget build(BuildContext context) {
-    myFuture = switchPerangkatType();
+    myFuture = postData();
     return Scaffold(
       appBar: mxAppBar(
         title: 'Tambah perawatan baru',
@@ -166,7 +143,7 @@ class _AddPerawatanResultState extends State<AddPerawatanResult> {
                     labelBtn: 'Coba lagi',
                     onPress: () {
                       setState(() {
-                        myFuture = switchPerangkatType();
+                        myFuture = postData();
                       });
                     },
                   );
@@ -198,7 +175,7 @@ Widget mXcheckBoxListTile({required title, required Function(bool?)? onChanged, 
     focusNode: focusNode,
     title: Text(
       title,
-      style: TextStyle(color: value ? Colors.blue : Colors.grey[800]),
+      style: TextStyle(color: value ? Colors.blue : null),
     ),
     onChanged: onChanged,
     value: value,

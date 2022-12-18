@@ -5,26 +5,31 @@ import 'dart:convert';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:http/http.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/utils/helper.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perawatan/add_perawatan.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/screens/show_data/dataPerawatan.dart';
 import 'package:project_maintenance_app/screens/search_data/search_scan.dart';
 
+fetchDataTeknisi() async {
+  http.Response? response = await queryData(httpVerbs: httpGET, context: ctxTeknisi, action: actSelect);
+
+  try {
+    List teknisi = json.decode(response.body);
+    listTeknisi = teknisi.map((teknisi) => Teknisi.fromJson(teknisi)).toList();
+  } catch (e) {
+    throw Exception(errorDataEmpty);
+  }
+}
+
 Future<Perangkat?> searchPerangkat(String kodeUnit) async {
   // search qr result in database
-  Uri jsonEndPoint = Uri(
-    scheme: 'http',
-    host: url,
-    path: '$addressPath/getPerangkat/',
-    queryParameters: {'kode_unit': kodeUnit},
-  );
-
-  Response response = await get(jsonEndPoint);
+  http.Response response = await queryData(httpVerbs: httpGET, context: ctxDevice, action: actSelect, extraQueryParameters: {'kode_unit': kodeUnit});
 
   try {
     List device = json.decode(response.body);
@@ -34,13 +39,6 @@ Future<Perangkat?> searchPerangkat(String kodeUnit) async {
   } catch (e) {
     throw Exception(errorDataEmpty);
   }
-  // for (var element in dummyPerangkat) {
-  //   await Future.delayed(const Duration(milliseconds: 500));
-  //   if (element.kodeUnit == kodeUnit) {
-  //     return element;
-  //   }
-  // }
-  // return null;
 }
 
 class SearchResultPage extends StatelessWidget {
@@ -50,8 +48,9 @@ class SearchResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    fetchDataTeknisi();
     return Scaffold(
-      appBar: AppBar(
+      appBar: mxAppBar(
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
@@ -63,11 +62,7 @@ class SearchResultPage extends StatelessWidget {
             );
           },
         ),
-        title: const Text('Cari data'),
-        centerTitle: true,
-        foregroundColor: Colors.blueAccent,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: 'Cari data',
       ),
       body: FutureBuilder<Perangkat?>(
         future: searchPerangkat(kodeUnit),
@@ -100,6 +95,9 @@ class SearchResultPage extends StatelessWidget {
                                   title: blueBigText(text: 'Kode unit'),
                                   subtitle: Text(snapshot.data!.kodeUnit),
                                   children: [
+                                    ListTile(
+                                      title: blueBigText(text: 'Informasi'),
+                                    ),
                                     perangkatTile(
                                       title: 'User',
                                       trail: snapshot.data!.namaUser,
@@ -109,12 +107,16 @@ class SearchResultPage extends StatelessWidget {
                                       trail: snapshot.data!.ruangan,
                                     ),
                                     perangkatTile(
-                                      title: 'Nama unit',
+                                      title: 'Merk unit',
                                       trail: snapshot.data!.namaUnit,
                                     ),
                                     perangkatTile(
                                       title: 'Type',
                                       trail: snapshot.data!.type,
+                                    ),
+                                    perangkatTile(
+                                      title: 'Jenis',
+                                      trail: snapshot.data!.perangkat,
                                     ),
                                     perangkatTile(
                                       title: 'Keterangan',
@@ -135,7 +137,6 @@ class SearchResultPage extends StatelessWidget {
                               mxTextButtonNoIcon(
                                 buttonPadding: 15,
                                 label: 'Tambah data perawatan',
-                                hasOutline: false,
                                 onPress: () {
                                   var route = MaterialPageRoute(builder: (context) {
                                     return AddPerawatan(perangkat: snapshot.data!);
@@ -147,7 +148,6 @@ class SearchResultPage extends StatelessWidget {
                               mxTextButtonNoIcon(
                                 buttonPadding: 15,
                                 label: 'Lihat data perawatan',
-                                hasOutline: false,
                                 onPress: () {
                                   var route = MaterialPageRoute(builder: (context) {
                                     return DataPerawatan(device: snapshot.data!);
@@ -236,16 +236,15 @@ class SearchResultPage extends StatelessWidget {
   }
 }
 
-Widget perangkatTile({required title, required trail, Color? titleColor = Colors.blueAccent, Color? trailColor = Colors.black87}) {
+Widget perangkatTile({required title, required trail}) {
   return ListTile(
-    contentPadding: const EdgeInsets.symmetric(horizontal: 50, vertical: 0),
+    // contentPadding: const EdgeInsets.symmetric(horizontal: 50, vertical: 0),
     title: Text(
       title,
-      style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
+      style: const TextStyle(fontWeight: FontWeight.bold),
     ),
     trailing: Text(
       trail,
-      style: TextStyle(color: trailColor),
     ),
   );
 }

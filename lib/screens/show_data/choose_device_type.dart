@@ -2,17 +2,16 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
 import 'package:project_maintenance_app/custom_widget/myFloatingActionButton.dart';
 import 'package:project_maintenance_app/custom_widget/mycolor.dart';
-import 'package:project_maintenance_app/data/data_model.dart';
-import 'package:project_maintenance_app/data/helper.dart';
+import 'package:project_maintenance_app/models/data_model.dart';
+import 'package:project_maintenance_app/utils/network.util.dart';
+import 'package:project_maintenance_app/pages/core_page.dart';
 import 'package:project_maintenance_app/screens/add_data/add_perangkat/add_device.dart';
-import 'package:project_maintenance_app/screens/appsettings/ipaddress.dart';
 import 'package:project_maintenance_app/screens/show_data/device.dart';
-import 'package:project_maintenance_app/screens/show_data/ruangan.dart';
 
 class ChoosePerangkatPage extends StatefulWidget {
   const ChoosePerangkatPage({super.key, required this.ruangan});
@@ -24,6 +23,27 @@ class ChoosePerangkatPage extends StatefulWidget {
 }
 
 class _ChoosePerangkatPageState extends State<ChoosePerangkatPage> {
+  // fetch data from API
+  Future<Map<String, dynamic>?> countDevice(String ruangan) async {
+    http.Response? response = await queryData(
+      httpVerbs: httpGET,
+      context: ctxDevice,
+      action: actCount,
+      extraQueryParameters: {
+        'ruangan': ruangan,
+      },
+    );
+
+    try {
+      final deviceCount = json.decode(response.body);
+      if (kDebugMode) print(deviceCount);
+
+      return deviceCount;
+    } catch (e) {
+      throw 'undefined';
+    }
+  }
+
   late Future<Map<String, dynamic>?> myFuture;
 
   @override
@@ -54,7 +74,7 @@ class _ChoosePerangkatPageState extends State<ChoosePerangkatPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () {
-          return Future(() async {
+          return Future(() {
             setState(() => myFuture = countDevice(widget.ruangan.namaRuangan));
           });
         },
@@ -89,36 +109,9 @@ class _ChoosePerangkatPageState extends State<ChoosePerangkatPage> {
         tooltip: 'Tambah data perangkat',
         onPressed: () {
           var route = MaterialPageRoute(builder: ((context) => AddDevice(ruangan: widget.ruangan.namaRuangan)));
-          pushSecondHome(route: route);
+          pushRootRoute(route: route);
         },
       ),
     );
-  }
-}
-
-Future<Map<String, dynamic>?> countDevice(String ruangan) async {
-  Response? response;
-  try {
-    response = await get(Uri(
-      scheme: 'http',
-      host: url,
-      path: '$addressPath/getPerangkat/',
-      queryParameters: {
-        'ruangan': ruangan,
-        'mode': 'count',
-      },
-    ));
-  } catch (e) {
-    throw Exception(errorConnection);
-  }
-
-  try {
-    final deviceCount = json.decode(response.body);
-    if (kDebugMode) {
-      print(deviceCount);
-    }
-    return deviceCount;
-  } catch (e) {
-    throw 'undefined';
   }
 }
