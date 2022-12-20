@@ -170,7 +170,7 @@ class _AddPerawatanPrinterState extends State<AddPerawatanPrinter> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 15, 0, 20),
                     child: mxTextButtonNoIcon(
                       buttonPadding: 20,
                       label: 'Simpan',

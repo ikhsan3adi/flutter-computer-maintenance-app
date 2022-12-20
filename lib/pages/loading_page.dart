@@ -28,7 +28,7 @@ class LoadingPage extends StatelessWidget {
 
     loggedIn ??= false;
 
-    await Future.delayed(const Duration(seconds: 0)); // jeda
+    await Future.delayed(const Duration(seconds: 4)); // jeda
 
     if (loggedIn) {
       teknisi = Teknisi.fromJson(jsonDecode(preferences.getString('teknisi')!));

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myAppbar.dart';
+import 'package:project_maintenance_app/custom_widget/mycolor.dart';
 import 'package:project_maintenance_app/models/data_model.dart';
 import 'package:project_maintenance_app/custom_widget/myBuilder.dart';
 import 'package:project_maintenance_app/custom_widget/myTextButton.dart';
@@ -96,8 +97,9 @@ class SearchResultPage extends StatelessWidget {
                                   subtitle: Text(snapshot.data!.kodeUnit),
                                   children: [
                                     ListTile(
-                                      title: blueBigText(text: 'Informasi'),
+                                      title: blueBigText(text: 'Informasi', color: Colors.black87),
                                     ),
+                                    const Divider(thickness: 1),
                                     perangkatTile(
                                       title: 'User',
                                       trail: snapshot.data!.namaUser,
@@ -120,7 +122,7 @@ class SearchResultPage extends StatelessWidget {
                                     ),
                                     perangkatTile(
                                       title: 'Keterangan',
-                                      trail: snapshot.data!.keterangan,
+                                      trail: snapshot.data!.keterangan.trim() == '' ? '-' : snapshot.data!.keterangan,
                                     ),
                                   ],
                                 ),
@@ -221,8 +223,8 @@ class SearchResultPage extends StatelessWidget {
                 const SizedBox(
                   height: 80.0,
                 ),
-                const SpinKitFoldingCube(
-                  color: Colors.blueAccent,
+                SpinKitFoldingCube(
+                  color: colorSecondary,
                 ),
                 const SizedBox(
                   height: 80.0,

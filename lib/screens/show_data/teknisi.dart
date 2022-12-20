@@ -98,6 +98,21 @@ class _DataTeknisiState extends State<DataTeknisi> {
                               titleText: Text(snapshot.data![index].nama),
                               subtitleText: 'username : ${snapshot.data![index].username}',
                               onTap: () => Fluttertoast.showToast(msg: 'Say hello to mr. ${snapshot.data![index].nama}'),
+                              hasTrailing: true,
+                              trailing: PopupMenuButton(
+                                itemBuilder: ((context) => [
+                                      PopupMenuItem(
+                                        onTap: () async => await deleteTeknisi(snapshot.data![index]),
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.delete),
+                                            SizedBox(width: 10),
+                                            Text('Hapus'),
+                                          ],
+                                        ),
+                                      ),
+                                    ]),
+                              ),
                             );
                           },
                         );
@@ -142,6 +157,63 @@ class _DataTeknisiState extends State<DataTeknisi> {
           Navigator.of(coreScaffoldKey.currentContext!).push(route);
         },
       ),
+    );
+  }
+
+  Future<void> deleteTeknisi(Teknisi teknisi) async {
+    bool b = await openDeleteDialog(context: context, nama: teknisi.username);
+
+    if (!b) {
+      return;
+    }
+
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxTeknisi,
+      action: actDelete,
+      body: {'id_teknisi': teknisi.id},
+    );
+
+    if (response.statusCode != 200) {
+      Fluttertoast.showToast(msg: 'Tidak dapat terhubung ke server');
+      return;
+    }
+
+    if (int.parse(response.body.toString()) != 1) {
+      Fluttertoast.showToast(msg: 'Hapus "${teknisi.username}" gagal');
+      return;
+    }
+
+    setState(() {
+      myFuture = fetchDataTeknisi();
+      Fluttertoast.showToast(msg: 'Hapus "${teknisi.username}" berhasil');
+      // print(response.body);
+    });
+  }
+
+  Future<bool?> openDeleteDialog<bool>({required BuildContext context, required String nama}) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: Text('Apakah yakin ingin menghapus username "$nama?"'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Ya'),
+            )
+          ],
+        );
+      },
     );
   }
 }
