@@ -96,10 +96,10 @@ class SearchResultPage extends StatelessWidget {
                                   title: blueBigText(text: 'Kode unit'),
                                   subtitle: Text(snapshot.data!.kodeUnit),
                                   children: [
-                                    ListTile(
-                                      title: blueBigText(text: 'Informasi', color: Colors.black87),
+                                    const ListTile(
+                                      title: Text('Informasi', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                                     ),
-                                    const Divider(thickness: 1),
+                                    // const Divider(thickness: 1),
                                     perangkatTile(
                                       title: 'User',
                                       trail: snapshot.data!.namaUser,

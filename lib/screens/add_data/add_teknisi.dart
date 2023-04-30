@@ -224,8 +224,8 @@ class AddTeknisiResult extends StatelessWidget {
                   iconColor: Colors.green,
                   textColor: Colors.blue,
                   snapshotErr: 'Buat user berhasil',
-                  labelBtn: 'Login',
-                  iconRefresh: Icons.login_outlined,
+                  labelBtn: 'Kembali',
+                  iconRefresh: Icons.arrow_back_outlined,
                   onPress: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },

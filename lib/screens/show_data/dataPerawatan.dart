@@ -299,6 +299,14 @@ class _DataPerawatanState extends State<DataPerawatan> {
           ListTile(
             title: Text('Keterangan : ${snapshot.keterangan}'),
           ),
+          const Divider(),
+          ListTile(
+            trailing: TextButton.icon(
+              icon: const Icon(Icons.delete_forever),
+              onPressed: () async => deletePerawatan(snapshot.id),
+              label: const Text("Hapus"),
+            ),
+          ),
         ],
       ),
     );
@@ -343,6 +351,7 @@ class _DataPerawatanState extends State<DataPerawatan> {
           ListTile(
             title: Text('Keterangan : ${snapshot.keterangan}'),
           ),
+          const Divider(),
         ],
       ),
     );

@@ -9,6 +9,7 @@ Widget mxTextButton({
   IconData? icon,
   double? iconSize,
   VoidCallback? onPress,
+  Color? backgroundColor,
 }) {
   return ElevatedButton.icon(
     onPressed: onPress,
@@ -25,6 +26,7 @@ Widget mxTextButton({
     ),
     style: ElevatedButton.styleFrom(
       foregroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       alignment: Alignment.center,
       padding: EdgeInsets.all(buttonPadding),
       shape: RoundedRectangleBorder(

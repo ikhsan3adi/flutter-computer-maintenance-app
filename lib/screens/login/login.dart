@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/myDrawer.dart';
 import 'package:project_maintenance_app/custom_widget/myFormField.dart';
@@ -58,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(loginFailedText, style: const TextStyle(color: Colors.red)),
                     Padding(
@@ -132,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                               if (loginSuccess) {
                                 preferences.setBool('loggedIn', true);
                                 Navigator.of(context).pushReplacementNamed('/home');
+                                Fluttertoast.showToast(msg: 'Login berhasil');
                               } else {
                                 setState(() {
                                   loginFailedText = 'Login gagal, username / password salah';
