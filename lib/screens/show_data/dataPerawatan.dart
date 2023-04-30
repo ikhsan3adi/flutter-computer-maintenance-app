@@ -127,10 +127,17 @@ class _DataPerawatanState extends State<DataPerawatan> {
                           floatingHeader: true,
                           shrinkWrap: true,
                           groupBy: (element) {
-                            return element.tanggal.substring(3, 5);
+                            return element.tanggal.substring(3);
                           },
                           groupComparator: (value1, value2) {
-                            return value2.compareTo(value1);
+                            int year1 = int.parse(value1.substring(6));
+                            int year2 = int.parse(value2.substring(6));
+
+                            if (year1 == year2 || year1 < year2) {
+                              return value2.compareTo(value1);
+                            } else {
+                              return value1.compareTo(value2);
+                            }
                           },
                           groupSeparatorBuilder: (element) {
                             String month = element.tanggal.substring(3, 5);
