@@ -248,10 +248,12 @@ class _DataPerawatanState extends State<DataPerawatan> {
   Widget komputerListTileBuilder(PerawatanKomputer snapshot) {
     bool isCompleteAll;
 
-    PerawatanKomputer xy = snapshot;
-
-    isCompleteAll =
-        xy.pembersihan && xy.pengecekanChipset && xy.scanVirus && xy.pembersihanTemporary && xy.pengecekanSoftware && xy.installUpdateDriver;
+    isCompleteAll = snapshot.pembersihan &&
+        snapshot.pengecekanChipset &&
+        snapshot.scanVirus &&
+        snapshot.pembersihanTemporary &&
+        snapshot.pengecekanSoftware &&
+        snapshot.installUpdateDriver;
 
     Color? cardColor;
 
