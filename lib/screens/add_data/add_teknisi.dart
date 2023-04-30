@@ -278,7 +278,7 @@ class AddTeknisiResult extends StatelessWidget {
       print(response.body.toString());
     }
 
-    if (response.body.toString() == '1') {
+    if (int.parse(response.body) == 1) {
       return true;
     } else {
       throw Exception('Gagal insert ke database atau data sudah ada');

@@ -57,9 +57,8 @@ class _DataRuanganState extends State<DataRuangan> {
       ),
       body: RefreshIndicator(
         onRefresh: () async => Future(() {
-          setState(() {
-            myFuture = fetchDataRuangan();
-          });
+          myFuture = fetchDataRuangan();
+          setState(() {});
         }),
         child: FutureBuilder<List<Ruangan>>(
           future: myFuture,

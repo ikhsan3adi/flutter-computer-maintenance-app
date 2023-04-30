@@ -97,7 +97,10 @@ class _DataTeknisiState extends State<DataTeknisi> {
                               index: index,
                               titleText: Text(snapshot.data![index].nama),
                               subtitleText: 'username : ${snapshot.data![index].username}',
-                              onTap: () => Fluttertoast.showToast(msg: 'Say hello to mr. ${snapshot.data![index].nama}'),
+                              onTap: () {
+                                Fluttertoast.cancel();
+                                Fluttertoast.showToast(msg: 'Say hello to mr. ${snapshot.data![index].nama}');
+                              },
                               hasTrailing: true,
                               trailing: PopupMenuButton(
                                 itemBuilder: ((context) => [

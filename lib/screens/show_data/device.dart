@@ -250,9 +250,7 @@ class _DataDeviceState extends State<DataDevice> {
   Future<void> deleteDevice(kodeUnit) async {
     bool b = await openDeleteDialog(context: context, kodeUnit: kodeUnit);
 
-    if (!b) {
-      return;
-    }
+    if (!b) return;
 
     final http.Response response = await queryData(
       httpVerbs: httpPOST,

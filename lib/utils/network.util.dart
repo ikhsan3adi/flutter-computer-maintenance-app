@@ -43,6 +43,7 @@ Future<http.Response> queryData({
   );
 
   try {
+    // request to API using GET or POST
     switch (httpVerbs) {
       case httpGET:
         return await http.get(uri);

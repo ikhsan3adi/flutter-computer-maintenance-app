@@ -75,7 +75,8 @@ class _ChoosePerangkatPageState extends State<ChoosePerangkatPage> {
       body: RefreshIndicator(
         onRefresh: () {
           return Future(() {
-            setState(() => myFuture = countDevice(widget.ruangan.namaRuangan));
+            myFuture = countDevice(widget.ruangan.namaRuangan);
+            setState(() {});
           });
         },
         child: FutureBuilder<Map<String, dynamic>?>(

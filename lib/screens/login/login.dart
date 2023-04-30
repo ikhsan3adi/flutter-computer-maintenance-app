@@ -148,36 +148,8 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                     ),
-                    // Padding(
-                    //   padding: const EdgeInsets.only(top: 10),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       const Text(
-                    //         'Belum terdaftar?',
-                    //         textAlign: TextAlign.center,
-                    //         style: TextStyle(
-                    //           fontSize: 16,
-                    //         ),
-                    //       ),
-                    //       TextButton(
-                    //         onPressed: () {
-                    //           setState(() {
-                    //             focusNode.unfocus();
-                    //             var route = MaterialPageRoute(builder: (context) => const AddTeknisi());
-                    //             Navigator.push(context, route);
-                    //           });
-                    //         },
-                    //         child: blueBigText(
-                    //           text: 'Buat user teknisi',
-                    //           align: TextAlign.center,
-                    //           size: 16,
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
                     Flexible(
+                      fit: FlexFit.loose,
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 5),
                         title: const Text('Login sebagai admin'),
@@ -229,6 +201,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       if (response.body == '0') {
+        // login gagal jika response = '0'
         return false;
       } else {
         teknisi = Teknisi.fromJson(jsonDecode(response.body.toString()));

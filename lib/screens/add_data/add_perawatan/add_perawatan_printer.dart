@@ -176,7 +176,7 @@ class _AddPerawatanPrinterState extends State<AddPerawatanPrinter> {
                       label: 'Simpan',
                       onPress: () {
                         final isValidForm = formKey.currentState!.validate();
-                        if (isValidForm) return;
+                        if (!isValidForm) return;
 
                         focusNode.unfocus();
 
