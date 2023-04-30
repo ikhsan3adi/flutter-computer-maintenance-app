@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_maintenance_app/custom_widget/mycolor.dart';
 import 'package:project_maintenance_app/models/data_model.dart';
@@ -359,8 +360,70 @@ class _DataPerawatanState extends State<DataPerawatan> {
             title: Text('Keterangan : ${snapshot.keterangan}'),
           ),
           const Divider(),
+          ListTile(
+            trailing: TextButton.icon(
+              icon: const Icon(Icons.delete_forever),
+              onPressed: () async => deletePerawatan(snapshot.id),
+              label: const Text("Hapus"),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Future<void> deletePerawatan(int idPerawatan) async {
+    bool b = await confirmDelete() ?? false;
+
+    if (!b) return;
+
+    final http.Response response = await queryData(
+      httpVerbs: httpPOST,
+      context: ctxPerawatan,
+      action: actDelete,
+      body: {'id': idPerawatan.toString()},
+      extraQueryParameters: {
+        "kode_unit": widget.device.kodeUnit,
+        "perangkat": widget.device.perangkat,
+      },
+    );
+
+    try {
+      if (int.parse(response.body) != 1) {
+        Fluttertoast.showToast(msg: 'Kesalahan script php');
+        return;
+      }
+      setState(() {
+        myFuture = fetchDataPerawatan(
+          widget.device.kodeUnit,
+          widget.device.perangkat,
+        );
+        Fluttertoast.showToast(msg: 'Hapus perawatan berhasil');
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Hapus perawatan gagal : $e');
+    }
+  }
+
+  Future<bool?> confirmDelete() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: const Text('Apakah yakin ingin menghapus data perawatan ini?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Ya'),
+            )
+          ],
+        );
+      },
     );
   }
 }
